@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<!--https://www.oracle.com/technetwork/java/javase/downloads/javafxscenebuilder-1x-archive-2199384.html-->
+
+<GridPane alignment="center" hgap="10" vgap="10" styleClass="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sunlight.client.gui.fx.controllers.LoginWindowController">
+    <padding><Insets top="25" right="25" bottom="25" left="25"/></padding>
+
+    <Text id="welcome-text" text="%welcome" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
+
+    <Label text="%equipmentName" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+
+    <TextField fx:id="equipmentNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" onKeyPressed="#handleKeyPress"/>
+
+    <Label text="%username" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+
+    <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="2" onKeyPressed="#handleKeyPress"/>
+
+    <Label text="%passwd" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+
+    <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="3" onKeyPressed="#handleKeyPress"/>
+
+    <HBox spacing="10" alignment="bottom_right" GridPane.columnIndex="1" GridPane.rowIndex="4">
+        <Button text="%signin" onAction="#handleSubmit"/>
+        <Button text="%cancel" onAction="#handleCancel"/>
+    </HBox>
+
+    <Text fx:id="actiontarget" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+
+    <stylesheets>
+        <URL value="@css/Login.css" />
+    </stylesheets>
+</GridPane>
