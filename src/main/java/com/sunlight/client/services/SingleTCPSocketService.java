@@ -33,6 +33,9 @@ public class SingleTCPSocketService {
     @Value("${tahara.port}")
     Integer port;
 
+    @Value("${tahara.encoding}")
+    String encoding;
+
     private ConcurrentHashMap<String, MessageCallback> callbackMap = new ConcurrentHashMap<>();
 
     JAXBContext context;
@@ -135,7 +138,7 @@ public class SingleTCPSocketService {
                                         int packingLength = Integer.parseInt(lenStr);
 
                                         if(packingLength == (endIdx - headIdx - 1)) {
-                                            String str = new String(buffer, headIdx + 1, packingLength).trim();
+                                            String str = new String(buffer, headIdx + 1, packingLength, encoding).trim();
 
                                             if(str != null) {
                                                 logger.info("[socketReceiverThread] received : {}", str);
