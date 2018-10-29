@@ -134,14 +134,15 @@ public class SingleTCPSocketService {
 
                                         int packingLength = Integer.parseInt(lenStr);
 
-                                        if(packingLength != (endIdx - headIdx - 1)) {
-                                            logger.error("MISMATCH!!!");
-                                        } else {
+                                        if(packingLength == (endIdx - headIdx - 1)) {
                                             String str = new String(buffer, headIdx + 1, packingLength).trim();
 
                                             if(str != null) {
+                                                logger.info("[socketReceiverThread] received : {}", str);
                                                 processMessage(str);
                                             }
+                                        } else {
+                                            logger.info("MISMATCH! packingLength : {}, headIdx : {}, endIdx : {}", packingLength, headIdx, endIdx);
                                         }
 
                                         pos = pos - endIdx - 1;
@@ -202,8 +203,6 @@ public class SingleTCPSocketService {
     }
 
     private void processMessage(String str) throws JAXBException {
-        logger.info("[processMessage] received message : {}", str);
-
         Unmarshaller unmarshaller = context.createUnmarshaller();
         Message message = (Message) unmarshaller.unmarshal(new StringReader(str));
 
