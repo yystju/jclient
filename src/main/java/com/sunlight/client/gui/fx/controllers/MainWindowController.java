@@ -298,7 +298,9 @@ public class MainWindowController implements Initializable {
                 });
             } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);
-                FXUtil.alert(bundle.getString("error"), String.format(bundle.getString("exceptionOccurred"), ex.getMessage()));
+                Platform.runLater(() -> {
+                    FXUtil.alert(bundle.getString("error"), String.format(bundle.getString("exceptionOccurred"), ex.getMessage()));
+                });
             }
         });
     }

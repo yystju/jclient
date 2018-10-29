@@ -99,6 +99,8 @@ public class SingleTCPSocketService {
                 socket.close();
             }
 
+            logger.info("Connecting {}:{}...", host, port);
+
             socket = new Socket();
 
             socket.setTcpNoDelay(true);
