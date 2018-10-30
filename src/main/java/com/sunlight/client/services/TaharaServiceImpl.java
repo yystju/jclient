@@ -3,7 +3,7 @@ package com.sunlight.client.services;
 import com.sunlight.client.api.ErrorHandler;
 import com.sunlight.client.api.MessageCallback;
 import com.sunlight.client.api.TaharaService;
-import com.sunlight.client.vo.*;
+import com.sunlight.client.vo.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

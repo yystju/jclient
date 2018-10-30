@@ -7,7 +7,6 @@ import com.sunlight.client.util.FXUtil;
 import com.sunlight.client.vo.*;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -16,8 +15,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -26,6 +25,7 @@ import javafx.scene.input.MouseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 import java.awt.*;
@@ -55,6 +55,8 @@ public class MainWindowController implements Initializable {
 
     private TaharaService taharaService;
     private ResourceBundle bundle;
+    private String side;
+    private String scannerSide;
 
     @Override
     public void initialize(URL location, ResourceBundle bundle) {
@@ -67,6 +69,18 @@ public class MainWindowController implements Initializable {
         this.taharaService = context.getBean(TaharaService.class);
 
         logger.info("taharaService : {}", this.taharaService);
+
+        Environment env = context.getBean(Environment.class);
+
+        logger.info("env : {}", env);
+
+        side = env.getProperty("client.side");
+
+        logger.info("side : {}", side);
+
+        scannerSide = env.getProperty("client.scannerSide");
+
+        logger.info("scannerSide : {}", scannerSide);
 
         this.tableView.setRowFactory(row -> {
             return new TableRow<PackingInfo>() {
@@ -240,7 +254,7 @@ public class MainWindowController implements Initializable {
             message.getHeader().setLocation(new Location());
             message.getBody().setPackageInfo(new PackageInfo());
             message.getBody().setPcb(new PCB());
-//
+
 //                message.getHeader().setMessageClass("5018");
 //                message.getHeader().setReply(1);
 //                message.getHeader().setTransactionID(transactionId);
@@ -249,10 +263,9 @@ public class MainWindowController implements Initializable {
 //                message.getBody().getPcb().setBarcode(wipno);
 //                message.getBody().getPcb().setLabel(wipno);
 //                message.getBody().getPcb().setModelCode(wipno);
-//                message.getBody().getPcb().setPcbSide("2");
-//                message.getBody().getPcb().setScannerMountSide("2");
+//                message.getBody().getPcb().setPcbSide(this.side);
+//                message.getBody().getPcb().setScannerMountSide(this.scannerSide);
 //                message.getBody().getPcb().setSerialNo(wipno);
-
 
             message.getHeader().setMessageClass("501");
             message.getHeader().setReply(1);
@@ -264,8 +277,8 @@ public class MainWindowController implements Initializable {
             message.getBody().getPcb().setBarcode(wipno);
             message.getBody().getPcb().setModelCode(wipno);
             message.getBody().getPcb().setSerialNo(wipno);
-            message.getBody().getPcb().setPcbSide("1");
-            message.getBody().getPcb().setScannerMountSide("T");
+            message.getBody().getPcb().setPcbSide(this.side);
+            message.getBody().getPcb().setScannerMountSide(this.scannerSide);
 
             packingInfo.setRequest(message);
 

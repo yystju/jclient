@@ -66,7 +66,7 @@ public class SingleTCPSocketService {
         logger.info("[SingleTCPSocketService.dispose]");
     }
 
-    public void sendMessage(Message message, MessageCallback callback) throws Exception {
+    public synchronized void sendMessage(Message message, MessageCallback callback) throws Exception {
         Marshaller marshaller = context.createMarshaller();
 
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -81,13 +81,13 @@ public class SingleTCPSocketService {
 
         outs.close();
 
-        String content = String.format("\2%d\1%s\3", array.length, new String(array, "UTF-8"));
+        String content = String.format("\2%d\1%s\3", array.length, new String(array, encoding));
 
         logger.info("[sendMessage] content : {}", content);
 
         callbackMap.put(message.getHeader().getTransactionID(), callback);
 
-        getSocket().getOutputStream().write(content.getBytes("UTF-8"));
+        getSocket().getOutputStream().write(content.getBytes(encoding));
         getSocket().getOutputStream().flush();
     }
 
@@ -96,7 +96,7 @@ public class SingleTCPSocketService {
     }
 
 
-    protected Socket getSocket() throws IOException {
+    protected synchronized Socket getSocket() throws IOException {
         if(socket == null || !socket.isConnected()) {
             if(socket != null) {
                 socket.close();
