@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sunlight.client.ClientApplication;
 import com.sunlight.client.api.TaharaService;
 import com.sunlight.client.gui.fx.vo.ClientConfiguration;
+import com.sunlight.client.util.ClientConfigurationUtil;
 import com.sunlight.client.util.FXUtil;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -58,47 +59,16 @@ public class LoginWindowController implements Initializable {
 
         logger.info("taharaService : {}", this.taharaService);
 
-        loadClientConfiguration();
+        ClientConfigurationUtil.loadClientConfiguration();
+
+        this.clientConfiguration = ClientConfigurationUtil.getClientConfiguration();
+
+        if(clientConfiguration != null) {
+            this.equipmentNameField.setText(clientConfiguration.getEquipmentName());
+            this.usernameField.setText(clientConfiguration.getUsername());
+        }
 
         this.passwordField.requestFocus();
-    }
-
-    private void loadClientConfiguration() {
-        File clientConfigurationFile = new File("./client.json");
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        if(clientConfigurationFile.exists()) {
-            try {
-                clientConfiguration = mapper.readValue(clientConfigurationFile, ClientConfiguration.class);
-
-                if(clientConfiguration != null) {
-                    this.equipmentNameField.setText(clientConfiguration.getEquipmentName());
-                    this.usernameField.setText(clientConfiguration.getUsername());
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-        if(clientConfiguration == null) {
-            clientConfiguration = new ClientConfiguration();
-        }
-    }
-
-    private void saveClientConfiguration(String equipmentName, String username) {
-        File clientConfigurationFile = new File("./client.json");
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        try {
-            this.clientConfiguration.setEquipmentName(equipmentName);
-            this.clientConfiguration.setUsername(username);
-
-            mapper.writeValue(clientConfigurationFile, this.clientConfiguration);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
     }
 
     public void handleKeyPress(KeyEvent event) {
@@ -152,7 +122,7 @@ public class LoginWindowController implements Initializable {
         if(taharaService.authenticate(username, password)) {
             this.taharaService.setEquipmentName(equipmentName);
 
-            saveClientConfiguration(equipmentName, username);
+            ClientConfigurationUtil.saveClientConfiguration(equipmentName, username);
 
             startMainWindow(event);
         } else {

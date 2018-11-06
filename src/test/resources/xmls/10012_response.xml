@@ -1,0 +1,9 @@
+<message>
+    <header messageClass="10012" transactionID="1234567890" reply="1">
+        <location routeID="1001" routeName="LINE1" equipmentID="1000" equipmentName="S02-L01-PACKGE-M1" zoneID="1001" zonePos="1" zoneName="packge" laneNo="0" controllerGuid="abcd12345678"/>
+    </header>
+    <body>
+        <result errorCode="0" errorText=""/>
+        <packageContainer number="" label="" quantity="" state="" capacity="" size="" /> <!--开箱时会返回对应箱子信息-->
+    </body>
+</message>

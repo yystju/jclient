@@ -3,7 +3,7 @@ package com.sunlight.client.services;
 import com.sunlight.client.api.ErrorHandler;
 import com.sunlight.client.api.MessageCallback;
 import com.sunlight.client.api.TaharaService;
-import com.sunlight.client.vo.Message;
+import com.sunlight.client.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +34,13 @@ public class TaharaServiceImpl implements TaharaService {
     }
 
     @Override
-    public void startPacking(Message request, MessageCallback callback) {
-
+    public void startPacking(Message request, MessageCallback callback) throws Exception {
+        singleTCPSocketService.sendMessage(request, callback);
     }
 
     @Override
-    public void closePacking(Message request, MessageCallback callback) {
-
+    public void closePacking(Message request, MessageCallback callback) throws Exception {
+        singleTCPSocketService.sendMessage(request, callback);
     }
 
     @Override

@@ -35,4 +35,12 @@ public class ObjectFactory {
     public Result createResult() {
         return new Result();
     }
+
+    public Product createProduct() {
+        return new Product();
+    }
+
+    public PackageContainer createPackageContainer() {
+        return new PackageContainer();
+    }
 }

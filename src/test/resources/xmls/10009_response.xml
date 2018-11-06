@@ -1,0 +1,10 @@
+<message>
+    <header messageClass="10009" transactionID="1234567890" reply="1">
+        <location routeID="1001" routeName="LINE1" equipmentID="1000" equipmentName="S02-L01-PACKGE-M1" zoneID="1001" zonePos="1" zoneName="packge" laneNo="0" controllerGuid="abcd12345678"/>
+    </header>
+    <body>
+        <result errorCode="0" errorText=""/>
+        <product name="1.00.03.212-01" bin="001"/>
+        <packageContainer number="1.00.03.212-0100120180418000001" capacity="" state=""/>
+    </body>
+</message>

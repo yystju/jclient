@@ -8,7 +8,9 @@ import java.io.Serializable;
 @XmlType(propOrder = {
         "packageInfo",
         "pcb",
-        "result"
+        "result",
+        "product",
+        "packageContainer"
 })
 public class Body implements Serializable {
     @XmlElement(name="packageInfo", required=true)
@@ -19,6 +21,12 @@ public class Body implements Serializable {
 
     @XmlElement(name="result", required=true)
     private Result result;
+
+    @XmlElement(name="product", required=true)
+    private Product product;
+
+    @XmlElement(name="packageContainer", required=true)
+    private PackageContainer packageContainer;
 
     public PackageInfo getPackageInfo() {
         return packageInfo;
@@ -42,5 +50,21 @@ public class Body implements Serializable {
 
     public void setResult(Result result) {
         this.result = result;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public PackageContainer getPackageContainer() {
+        return packageContainer;
+    }
+
+    public void setPackageContainer(PackageContainer packageContainer) {
+        this.packageContainer = packageContainer;
     }
 }

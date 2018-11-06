@@ -8,8 +8,8 @@ public interface TaharaService {
     void setEquipmentName(String equipmentName);
     String getEquipmentName();
 
-    void startPacking(Message request, MessageCallback callback);
-    void closePacking(Message request, MessageCallback callback);
+    void startPacking(Message request, MessageCallback callback) throws Exception;
+    void closePacking(Message request, MessageCallback callback) throws Exception;
 
     void process5018(Message request, MessageCallback callback) throws Exception;
 

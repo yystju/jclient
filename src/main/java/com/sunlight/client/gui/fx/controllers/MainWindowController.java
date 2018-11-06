@@ -2,7 +2,9 @@ package com.sunlight.client.gui.fx.controllers;
 
 import com.sunlight.client.ClientApplication;
 import com.sunlight.client.api.TaharaService;
+import com.sunlight.client.gui.fx.vo.ClientConfiguration;
 import com.sunlight.client.gui.fx.vo.PackingInfo;
+import com.sunlight.client.util.ClientConfigurationUtil;
 import com.sunlight.client.util.FXUtil;
 import com.sunlight.client.vo.*;
 import io.reactivex.Observable;
@@ -57,6 +59,8 @@ public class MainWindowController implements Initializable {
     private ResourceBundle bundle;
     private String side;
     private String scannerSide;
+
+    private ClientConfiguration clientConfiguration;
 
     @Override
     public void initialize(URL location, ResourceBundle bundle) {
@@ -124,6 +128,12 @@ public class MainWindowController implements Initializable {
                 FXUtil.alert(bundle.getString("error"), String.format(bundle.getString("exceptionOccurred"), ex.getMessage()));
             });
         });
+
+        this.clientConfiguration = ClientConfigurationUtil.getClientConfiguration();
+
+        if(!StringUtils.isEmpty(this.clientConfiguration.getPackingSN())) {
+            this.packageSNField.setText(this.clientConfiguration.getPackingSN());
+        }
     }
 
     //---- EVENT HANDLERs ----
@@ -184,9 +194,7 @@ public class MainWindowController implements Initializable {
             return;
         }
 
-        //TODO: 改成真正的调用后端代码。。。
-
-        packageSNField.setText("1010101");
+        do10009();
     }
 
     public void onBtnClosePackingClicked(MouseEvent mouseEvent) {
@@ -201,16 +209,91 @@ public class MainWindowController implements Initializable {
             return;
         }
 
-        //TODO: 改成真正的调用后端代码。。。
-
-        packageSNField.setText("");
-        tableView.getItems().clear();
+        do10012("2");
     }
 
     //---- BUSINESS ACTIONS ----
 
+    private void do10009() {
+        final String equipmentName = this.taharaService.getEquipmentName();
+
+        final String productNumber = FXUtil.input(this.bundle.getString("inputProductNumber"), this.bundle.getString("inputProductNumber"), this.clientConfiguration.getProductNumber());
+
+        if(StringUtils.isEmpty(productNumber)) {
+            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("productNumberEmpty"));
+            return;
+        }
+
+        final String productBin = FXUtil.input(this.bundle.getString("inputProductBIN"), this.bundle.getString("inputProductBIN"), this.clientConfiguration.getProductBIN());
+
+        if(StringUtils.isEmpty(productBin)) {
+            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("productBINEmpty"));
+            return;
+        }
+
+        Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
+            String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
+
+            this.clientConfiguration.setProductNumber(productNumber);
+            this.clientConfiguration.setProductBIN(productBin);
+            ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN());
+
+            Message message = new Message();
+
+            message.setBody(new Body());
+            message.setHeader(new Header());
+            message.getHeader().setLocation(new Location());
+            message.getBody().setProduct(new Product());
+
+            message.getHeader().setMessageClass("10009");
+            message.getHeader().setReply(1);
+            message.getHeader().setTransactionID(transactionId);
+            message.getHeader().getLocation().setRouteName(equipmentName);
+            message.getHeader().getLocation().setEquipmentName(equipmentName);
+            message.getHeader().getLocation().setZoneName(equipmentName);
+
+            message.getBody().getProduct().setName(productNumber);
+            message.getBody().getProduct().setBin(productBin);
+
+            emitter.onNext(message);
+            emitter.onComplete();
+        })
+        .subscribeOn(Schedulers.computation())
+        .observeOn(Schedulers.io())
+        .subscribe(request -> {
+            try {
+                taharaService.startPacking(request, (Message result) -> {
+                    logger.info("{} :: {}", request.getHeader().getTransactionID(), result.getHeader().getTransactionID());
+
+                    if(!request.getHeader().getTransactionID().equals(result.getHeader().getTransactionID())) {
+                        return;
+                    }
+
+                    Platform.runLater(() -> {
+                        if(!"0".equals(result.getBody().getResult().getErrorCode())) {
+                            FXUtil.error(this.bundle.getString("error"), String.format(this.bundle.getString("errorOccurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
+                            packageSNField.setText("");
+                            return;
+                        }
+
+                        packageSNField.setText(result.getBody().getPackageContainer().getNumber());
+
+                        this.clientConfiguration.setPackingSN(result.getBody().getPackageContainer().getNumber());
+                        ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN());
+                    });
+                });
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+                Platform.runLater(() -> {
+                    FXUtil.alert(bundle.getString("error"), String.format(bundle.getString("exceptionOccurred"), ex.getMessage()));
+                });
+            }
+        });
+    }
+
     private void do5018() {
         final String sn = packageSNField.getText().trim();
+
         if(StringUtils.isEmpty(sn)) {
             FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("snEmpty"));
             return;
@@ -255,30 +338,33 @@ public class MainWindowController implements Initializable {
             message.getBody().setPackageInfo(new PackageInfo());
             message.getBody().setPcb(new PCB());
 
-//                message.getHeader().setMessageClass("5018");
-//                message.getHeader().setReply(1);
-//                message.getHeader().setTransactionID(transactionId);
-//
-//                message.getBody().getPackageInfo().setSn(sn);
-//                message.getBody().getPcb().setBarcode(wipno);
-//                message.getBody().getPcb().setLabel(wipno);
-//                message.getBody().getPcb().setModelCode(wipno);
-//                message.getBody().getPcb().setPcbSide(this.side);
-//                message.getBody().getPcb().setScannerMountSide(this.scannerSide);
-//                message.getBody().getPcb().setSerialNo(wipno);
-
-            message.getHeader().setMessageClass("501");
+            message.getHeader().setMessageClass("5018");
             message.getHeader().setReply(1);
             message.getHeader().setTransactionID(transactionId);
-            message.getHeader().getLocation().setEquipmentName(equipmentName);
             message.getHeader().getLocation().setRouteName(equipmentName);
+            message.getHeader().getLocation().setEquipmentName(equipmentName);
             message.getHeader().getLocation().setZoneName(equipmentName);
 
+            message.getBody().getPackageInfo().setSn(sn);
             message.getBody().getPcb().setBarcode(wipno);
+            message.getBody().getPcb().setLabel(wipno);
             message.getBody().getPcb().setModelCode(wipno);
-            message.getBody().getPcb().setSerialNo(wipno);
             message.getBody().getPcb().setPcbSide(this.side);
             message.getBody().getPcb().setScannerMountSide(this.scannerSide);
+            message.getBody().getPcb().setSerialNo(wipno);
+
+//            message.getHeader().setMessageClass("501");
+//            message.getHeader().setReply(1);
+//            message.getHeader().setTransactionID(transactionId);
+//            message.getHeader().getLocation().setEquipmentName(equipmentName);
+//            message.getHeader().getLocation().setRouteName(equipmentName);
+//            message.getHeader().getLocation().setZoneName(equipmentName);
+//
+//            message.getBody().getPcb().setBarcode(wipno);
+//            message.getBody().getPcb().setModelCode(wipno);
+//            message.getBody().getPcb().setSerialNo(wipno);
+//            message.getBody().getPcb().setPcbSide(this.side);
+//            message.getBody().getPcb().setScannerMountSide(this.scannerSide);
 
             packingInfo.setRequest(message);
 
@@ -317,6 +403,68 @@ public class MainWindowController implements Initializable {
             }
         });
     }
+
+    private void do10012(String state) { //箱子状态 = 0 : 装箱中, 1 : 装完, 2 : 封箱, 3 : 报废
+        final String equipmentName = this.taharaService.getEquipmentName();
+
+        Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
+            String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
+
+            Message message = new Message();
+
+            message.setBody(new Body());
+            message.setHeader(new Header());
+            message.getHeader().setLocation(new Location());
+            message.getBody().setProduct(new Product());
+            message.getBody().setPackageContainer(new PackageContainer());
+
+            message.getHeader().setMessageClass("10012");
+            message.getHeader().setReply(1);
+            message.getHeader().setTransactionID(transactionId);
+            message.getHeader().getLocation().setRouteName(equipmentName);
+            message.getHeader().getLocation().setEquipmentName(equipmentName);
+            message.getHeader().getLocation().setZoneName(equipmentName);
+
+            message.getBody().getProduct().setNumber(this.clientConfiguration.getProductNumber());
+            message.getBody().getProduct().setLabel("");
+
+            message.getBody().getPackageContainer().setNumber(packageSNField.getText());
+            message.getBody().getPackageContainer().setState(state);
+
+            emitter.onNext(message);
+            emitter.onComplete();
+        })
+        .subscribeOn(Schedulers.computation())
+        .observeOn(Schedulers.io())
+        .subscribe(request -> {
+            try {
+                taharaService.closePacking(request, (Message result) -> {
+                    logger.info("{} :: {}", request.getHeader().getTransactionID(), result.getHeader().getTransactionID());
+
+                    if(!request.getHeader().getTransactionID().equals(result.getHeader().getTransactionID())) {
+                        return;
+                    }
+
+                    Platform.runLater(() -> {
+                        if(!"0".equals(result.getBody().getResult().getErrorCode())) {
+                            FXUtil.error(this.bundle.getString("error"), String.format(this.bundle.getString("errorOccurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
+                            return;
+                        }
+
+                        packageSNField.setText("");
+                        tableView.getItems().clear();
+                    });
+                });
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+                Platform.runLater(() -> {
+                    FXUtil.alert(bundle.getString("error"), String.format(bundle.getString("exceptionOccurred"), ex.getMessage()));
+                });
+            }
+        });
+    }
+
+    //---- UTILITIES ----
 
     private void refreshStatusBar() {
         ObservableList<PackingInfo> infoList = tableView.getItems();

@@ -19,22 +19,20 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 @SpringBootTest
-public class MES5018JAXBTests {
-    private static Logger logger = LoggerFactory.getLogger(MES5018JAXBTests.class);
+public class MES10012JAXBTests {
+    private static Logger logger = LoggerFactory.getLogger(MES10012JAXBTests.class);
     @Test
-    public void test5018Load() {
+    public void test10012RequestLoad() {
         try {
             JAXBContext context = JAXBContext.newInstance("com.sunlight.client.vo");
 
             Unmarshaller unmarshaller = context.createUnmarshaller();
 
-            InputStream ins = MES5018JAXBTests.class.getResourceAsStream("/xmls/5018_request.xml");
+            InputStream ins = MES10012JAXBTests.class.getResourceAsStream("/xmls/10012_request.xml");
 
             Message message = (Message) unmarshaller.unmarshal(new StreamSource(ins));
 
-            assertEquals("5018", message.getHeader().getMessageClass());
-            assertEquals("1234567890&xxxx", message.getHeader().getTransactionID());
-            assertEquals("TEST-DEV11", message.getHeader().getLocation().getEquipmentName());
+            assertEquals("10012", message.getHeader().getMessageClass());
 
             logger.info("transactionid : {}", message.getHeader().getTransactionID());
         } catch (Exception e) {
@@ -43,7 +41,7 @@ public class MES5018JAXBTests {
     }
 
     @Test
-    public void test5018Dump() {
+    public void test10012RequestDump() {
         try {
             JAXBContext context = JAXBContext.newInstance("com.sunlight.client.vo");
 
@@ -66,20 +64,20 @@ public class MES5018JAXBTests {
             message.setBody(new Body());
             message.setHeader(new Header());
             message.getHeader().setLocation(new Location());
-            message.getBody().setPackageInfo(new PackageInfo());
-            message.getBody().setPcb(new PCB());
+            message.getBody().setProduct(new Product());
+            message.getBody().setPackageContainer(new PackageContainer());
 
-            message.getHeader().setMessageClass("5018");
+            message.getHeader().setMessageClass("10012");
             message.getHeader().setReply(1);
             message.getHeader().setTransactionID(String.format("%s-%d-%d", equipmentName, System.currentTimeMillis(), seq));
 
-            message.getBody().getPackageInfo().setSn(sn);
-            message.getBody().getPcb().setBarcode(barcode);
-            message.getBody().getPcb().setLabel(barcode);
-            message.getBody().getPcb().setModelCode(modelCode);
-            message.getBody().getPcb().setPcbSide("2");
-            message.getBody().getPcb().setScannerMountSide("2");
-            message.getBody().getPcb().setSerialNo(barcode);
+            message.getBody().getProduct().setNumber("1111");
+            message.getBody().getProduct().setLabel("1111");
+
+            message.getBody().getPackageContainer().setNumber("2222");
+            message.getBody().getPackageContainer().setLabel("2222");
+            message.getBody().getPackageContainer().setState("1"); //箱子状态 = 0 : 装箱中, 1 : 装完, 2 : 封箱, 3 : 报废
+            message.getBody().getPackageContainer().setOperator("...");
 
             marshaller.marshal(message, outs);
 
@@ -88,6 +86,25 @@ public class MES5018JAXBTests {
             outs.close();
 
             logger.info("content : {}", content);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    @Test
+    public void test10012ResponseLoad() {
+        try {
+            JAXBContext context = JAXBContext.newInstance("com.sunlight.client.vo");
+
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+
+            InputStream ins = MES10012JAXBTests.class.getResourceAsStream("/xmls/10012_response.xml");
+
+            Message message = (Message) unmarshaller.unmarshal(new StreamSource(ins));
+
+            assertEquals("10012", message.getHeader().getMessageClass());
+
+            logger.info("transactionid : {}", message.getHeader().getTransactionID());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
