@@ -566,7 +566,7 @@ public class MainWindowController implements Initializable {
             message.getHeader().getLocation().setEquipmentName(equipmentName);
             message.getHeader().getLocation().setZoneName(equipmentName);
 
-            message.getBody().getProduct().setNumber(this.clientConfiguration.getProductNumber());
+            message.getBody().getProduct().setNumber("");
             message.getBody().getProduct().setLabel("");
 
             message.getBody().getPackageContainer().setNumber(finalSN);
