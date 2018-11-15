@@ -18,6 +18,16 @@ public class FXUtil {
 
     public static boolean choice(String title, String text) {
         Alert a = new Alert(Alert.AlertType.INFORMATION, text, ButtonType.CANCEL, ButtonType.OK);
+        a.setTitle(title);
+        a.setHeaderText(title);
+        a.showAndWait();
+        return (a.getResult() == ButtonType.OK);
+    }
+
+    public static boolean warningChoice(String title, String text) {
+        Alert a = new Alert(Alert.AlertType.WARNING, text, ButtonType.CANCEL, ButtonType.OK);
+        a.setTitle(title);
+        a.setHeaderText(title);
         a.showAndWait();
         return (a.getResult() == ButtonType.OK);
     }

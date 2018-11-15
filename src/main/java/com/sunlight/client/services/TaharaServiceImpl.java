@@ -52,4 +52,9 @@ public class TaharaServiceImpl implements TaharaService {
     public void process5018(Message request, MessageCallback callback) throws Exception {
         singleTCPSocketService.sendMessage(request, callback);
     }
+
+    @Override
+    public void process10010(Message request, MessageCallback callback) throws Exception {
+        singleTCPSocketService.sendMessage(request, callback);
+    }
 }

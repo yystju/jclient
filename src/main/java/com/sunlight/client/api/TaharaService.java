@@ -12,6 +12,7 @@ public interface TaharaService {
     void closePacking(Message request, MessageCallback callback) throws Exception;
 
     void process5018(Message request, MessageCallback callback) throws Exception;
+    void process10010(Message request, MessageCallback callback) throws Exception;
 
     void registerExceptionHandler(ErrorHandler errorHandler);
 }
