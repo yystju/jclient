@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane fx:id="mainPane" onKeyPressed="#onMainPaneKeyPress" prefHeight="500.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sunlight.client.gui.fx.controllers.FailureWindowController">
+    <Label fx:id="wipnoLabel" alignment="CENTER" focusTraversable="true" layoutX="55.0" layoutY="71.0" prefHeight="70.0" prefWidth="491.0" text="-" textAlignment="CENTER" wrapText="true" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="20.0" />
+    <Label fx:id="errorMessageLabel" alignment="CENTER" focusTraversable="true" layoutX="4.0" layoutY="160.0" prefHeight="70.0" prefWidth="491.0" text="-" textAlignment="CENTER" wrapText="true" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" />
+    <Label fx:id="closeLabel" alignment="CENTER" focusTraversable="false" layoutX="4.0" layoutY="300.0" prefHeight="170.0" prefWidth="170.0" text="" textAlignment="CENTER" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="10.0" />
+    <stylesheets>
+        <URL value="@css/Failure.css" />
+    </stylesheets>
+</AnchorPane>

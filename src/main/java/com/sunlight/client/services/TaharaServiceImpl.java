@@ -48,42 +48,8 @@ public class TaharaServiceImpl implements TaharaService {
         this.singleTCPSocketService.registerExceptionHandler(errorHandler);
     }
 
-    //    private int count = 0;
-
     @Override
     public void process5018(Message request, MessageCallback callback) throws Exception {
-//        Random r = new Random(System.currentTimeMillis());
-//        try {
-//            Thread.sleep(500 + (long)(700.00 * r.nextDouble()));
-//        } catch (InterruptedException e) {
-//        }
-//
-//        Message result = new Message();
-//
-//        result.setBody(new Body());
-//        result.setHeader(new Header());
-//        result.getHeader().setLocation(new Location());
-//        result.getBody().setPackageInfo(new com.sunlight.client.vo.PackageInfo());
-//        result.getBody().setResult(new Result());
-//
-//        result.getHeader().setTransactionID(request.getHeader().getTransactionID());
-//        result.getHeader().setMessageClass("5018");
-//        result.getHeader().setReply(1);
-//
-//        int tmp = 0;
-//
-//        synchronized(TaharaServiceImpl.class) {
-//            tmp = count++;
-//        }
-//
-//        result.getBody().setResult(new Result());
-//        result.getBody().getResult().setBarcode(request.getBody().getPcb().getBarcode());
-//        result.getBody().getResult().setErrorCode(tmp % 2 == 0 ? "0" : "1");
-//        result.getBody().getResult().setErrorText(tmp % 2 == 0 ? "valid" : "invalid");
-//
-//        callback.onReceived(result);
-
         singleTCPSocketService.sendMessage(request, callback);
     }
-
 }

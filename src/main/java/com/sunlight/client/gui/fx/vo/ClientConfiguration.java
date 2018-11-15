@@ -6,6 +6,7 @@ public class ClientConfiguration {
     private String productNumber;
     private String productBIN;
     private String packingSN;
+    private long packageSequence;
 
     public String getEquipmentName() {
         return equipmentName;
@@ -45,5 +46,13 @@ public class ClientConfiguration {
 
     public void setPackingSN(String packingSN) {
         this.packingSN = packingSN;
+    }
+
+    public long getPackageSequence() {
+        return packageSequence;
+    }
+
+    public void setPackageSequence(long packageSequence) {
+        this.packageSequence = packageSequence;
     }
 }

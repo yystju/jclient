@@ -14,24 +14,26 @@
 
 <!--https://www.oracle.com/technetwork/java/javase/downloads/javafxscenebuilder-1x-archive-2199384.html-->
 
-<BorderPane prefHeight="720.0" prefWidth="1280.0" styleClass="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sunlight.client.gui.fx.controllers.MainWindowController">
+<BorderPane fx:id="main" prefHeight="720.0" prefWidth="1280.0" styleClass="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sunlight.client.gui.fx.controllers.MainWindowController">
     <top>
         <GridPane>
             <gridLinesVisible>true</gridLinesVisible>
             <columnConstraints>
-                <ColumnConstraints prefWidth="100.0" />
-                <ColumnConstraints percentWidth="80" />
+                <ColumnConstraints prefWidth="120.0" />
+                <ColumnConstraints prefWidth="750" />
+                <ColumnConstraints prefWidth="200.0" />
                 <ColumnConstraints prefWidth="100.0" />
                 <ColumnConstraints prefWidth="100.0" />
             </columnConstraints>
 
             <Label text="%packageSN" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="0" />
             <Label fx:id="packageSNField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            <Button prefHeight="4.0" prefWidth="200.0" text="%startPackingButton" GridPane.columnIndex="2" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnNewPackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="3" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnClosePackingClicked"/>
+            <Label fx:id="progressField" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+            <Button prefHeight="4.0" prefWidth="200.0" text="%startPackingButton" GridPane.columnIndex="3" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnNewPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="4" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnClosePackingClicked"/>
 
             <Label text="%wipno" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1" />
+            <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="4" GridPane.rowIndex="1" />
          <rowConstraints>
             <RowConstraints />
             <RowConstraints />
@@ -41,12 +43,12 @@
     <center>
         <TableView fx:id="tableView" onMousePressed="#onTableMousePressed" onKeyPressed="#onTableKeyPressed" prefHeight="640.0">
             <columns>
-                <TableColumn fx:id="columnId" prefWidth="100.0" text="%columnId">
+                <TableColumn fx:id="columnSequece" prefWidth="100.0" text="%columnName">
                     <cellValueFactory>
-                        <PropertyValueFactory property="transactionId" />
+                        <PropertyValueFactory property="sequence" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="columnName" prefWidth="300.0" text="%columnName">
+                <TableColumn fx:id="columnName" prefWidth="400.0" text="%columnName">
                     <cellValueFactory>
                         <PropertyValueFactory property="wipno" />
                     </cellValueFactory>
@@ -56,9 +58,19 @@
                         <PropertyValueFactory property="status" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="columnText" prefWidth="200.0" text="%columnText">
+                <TableColumn fx:id="columnText" prefWidth="400.0" text="%columnText">
                     <cellValueFactory>
                         <PropertyValueFactory property="text" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="columnId" prefWidth="300.0" text="%columnId">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="transactionId" />
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="columnInterval" prefWidth="100.0" text="%columnInterval">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="interval" />
                     </cellValueFactory>
                 </TableColumn>
             </columns>

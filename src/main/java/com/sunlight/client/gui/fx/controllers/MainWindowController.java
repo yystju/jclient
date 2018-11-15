@@ -16,7 +16,10 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -24,6 +27,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -36,6 +42,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainWindowController implements Initializable {
+    public static final String STATUS_FAILURE = "失败";
+    public static final String STATUS_SUCCESS = "成功";
     private static Logger logger = LoggerFactory.getLogger(MainWindowController.class);
 
     @FXML
@@ -51,14 +59,21 @@ public class MainWindowController implements Initializable {
     @FXML
     TableColumn<PackingInfo, String> columnText;
     @FXML
+    TableColumn<PackingInfo, String> columnSequece;
+    @FXML
+    TableColumn<PackingInfo, String> columnInterval;
+    @FXML
     Label statusLabel;
     @FXML
     Label packageSNField;
+    @FXML
+    Label progressField;
 
     private TaharaService taharaService;
     private ResourceBundle bundle;
     private String side;
     private String scannerSide;
+    private long packageSequence;
 
     private ClientConfiguration clientConfiguration;
 
@@ -103,9 +118,9 @@ public class MainWindowController implements Initializable {
 
                     setText(item);
 
-                    if("成功".equals(item)) {
+                    if(STATUS_SUCCESS.equals(item)) {
                         getTableRow().setStyle("-fx-background-color: #90EE90;");
-                    } else if("失败".equals(item)) {
+                    } else if(STATUS_FAILURE.equals(item)) {
                         getTableRow().setStyle("-fx-background-color: #FF0F0F;");
                     } else {
                         getTableRow().setStyle("");
@@ -134,6 +149,10 @@ public class MainWindowController implements Initializable {
         if(!StringUtils.isEmpty(this.clientConfiguration.getPackingSN())) {
             this.packageSNField.setText(this.clientConfiguration.getPackingSN());
         }
+
+        this.packageSequence = this.clientConfiguration.getPackageSequence();
+
+        logger.info("packageSequence : {}", packageSequence);
     }
 
     //---- EVENT HANDLERs ----
@@ -145,30 +164,33 @@ public class MainWindowController implements Initializable {
     }
 
     public void onTableMousePressed(MouseEvent event) {
+        PackingInfo row = tableView.getSelectionModel().getSelectedItem();
+
         if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
-            PackingInfo row = tableView.getSelectionModel().getSelectedItem();
             wipnoField.setText(row.getWipno());
         } else if(event.isSecondaryButtonDown()) {
             ContextMenu cm = new ContextMenu();
 
-            MenuItem deleteMenuItem = new MenuItem("删除");
-            deleteMenuItem.setOnAction((ActionEvent evt) -> {
-                tableView.getItems().remove(tableView.getSelectionModel().getSelectedItem());
-                refreshStatusBar();
-            });
-            cm.getItems().add(deleteMenuItem);
+            if(STATUS_FAILURE.equals(row.getStatus())) {
+                MenuItem deleteMenuItem = new MenuItem("删除");
+                deleteMenuItem.setOnAction((ActionEvent evt) -> {
+                    tableView.getItems().remove(tableView.getSelectionModel().getSelectedItem());
+                    refreshStatusBar();
+                });
+                cm.getItems().add(deleteMenuItem);
 
-            MenuItem resendMenuItem = new MenuItem("重发");
-            resendMenuItem.setOnAction((ActionEvent evt) -> {
-                PackingInfo selected = tableView.getSelectionModel().getSelectedItem();
+                MenuItem resendMenuItem = new MenuItem("重发");
+                resendMenuItem.setOnAction((ActionEvent evt) -> {
+                    PackingInfo selected = tableView.getSelectionModel().getSelectedItem();
 
-                wipnoField.setText(selected.getWipno());
+                    wipnoField.setText(selected.getWipno());
 
-                do5018();
+                    do5018();
 
-                refreshStatusBar();
-            });
-            cm.getItems().add(resendMenuItem);
+                    refreshStatusBar();
+                });
+                cm.getItems().add(resendMenuItem);
+            }
 
             MenuItem propertyMenuItem = new MenuItem("属性");
             propertyMenuItem.setOnAction((ActionEvent evt) -> {
@@ -202,7 +224,7 @@ public class MainWindowController implements Initializable {
         ObservableList<PackingInfo> infoList = tableView.getItems();
 
         int count = infoList.size();
-        int success = infoList.filtered(o -> "成功".equals(o.getStatus())).size();
+        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
 
         if(success < count) {
             FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
@@ -279,7 +301,6 @@ public class MainWindowController implements Initializable {
                         packageSNField.setText(result.getBody().getPackageContainer().getNumber());
 
                         this.clientConfiguration.setPackingSN(result.getBody().getPackageContainer().getNumber());
-                        ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN());
                     });
                 });
             } catch (Exception ex) {
@@ -316,6 +337,7 @@ public class MainWindowController implements Initializable {
 
         if(existed.size() == 0) {
             tmp = new PackingInfo();
+            tmp.setSequence(String.format("%d", ++packageSequence));
             tableView.getItems().add(tmp);
         } else {
             tmp = existed.get(0);
@@ -326,6 +348,7 @@ public class MainWindowController implements Initializable {
         packingInfo.setStatus("预捡中");
         packingInfo.setRequest(null);
         packingInfo.setResponse(null);
+        packingInfo.setStart(System.currentTimeMillis());
 
         Observable.create((ObservableOnSubscribe<PackingInfo>) (emitter) -> {
             String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
@@ -351,7 +374,7 @@ public class MainWindowController implements Initializable {
             message.getBody().getPcb().setModelCode(wipno);
             message.getBody().getPcb().setPcbSide(this.side);
             message.getBody().getPcb().setScannerMountSide(this.scannerSide);
-            message.getBody().getPcb().setSerialNo(wipno);
+            message.getBody().getPcb().setSerialNo(packingInfo.getSequence());
 
 //            message.getHeader().setMessageClass("501");
 //            message.getHeader().setReply(1);
@@ -382,18 +405,26 @@ public class MainWindowController implements Initializable {
                         return;
                     }
 
+                    packingInfo1.setEnd(System.currentTimeMillis());
                     packingInfo1.setResponse(result);
-                    packingInfo1.setStatus(result != null ? ("0".equals(result.getBody().getResult().getErrorCode()) ? "成功" : "失败") : "预捡中");
+                    packingInfo1.setStatus(result != null ? ("0".equals(result.getBody().getResult().getErrorCode()) ? STATUS_SUCCESS : STATUS_FAILURE) : "预捡中");
 
                     Platform.runLater(() -> {
                         tableView.refresh();
+                        tableView.scrollTo(tableView.getItems().size() - 1);
 
                         refreshStatusBar();
 
-                        if("失败".equals(packingInfo1.getStatus())) {
+                        if(STATUS_FAILURE.equals(packingInfo1.getStatus())) {
+                            //TODO: Maybe play a short mp3 sound will be better.
                             Toolkit.getDefaultToolkit().beep();
+
+                            showFailureDialog(packingInfo1.getWipno(), packingInfo1.getText());
                         }
                     });
+
+                    this.clientConfiguration.setPackageSequence(this.packageSequence);
+                    ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN(), this.clientConfiguration.getPackageSequence());
                 });
             } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);
@@ -471,10 +502,12 @@ public class MainWindowController implements Initializable {
 
         int count = infoList.size();
         int inProgress = infoList.filtered(o -> o.getResponse() == null).size();
-        int success = infoList.filtered(o -> "成功".equals(o.getStatus())).size();
-        int failure = infoList.filtered(o -> "失败".equals(o.getStatus())).size();
+        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
+        int failure = infoList.filtered(o -> STATUS_FAILURE.equals(o.getStatus())).size();
 
-        statusLabel.setText(String.format("总共%d个，预捡中%d个，成功%d个，失败%d个", count, inProgress, success, failure));
+        statusLabel.setText(String.format(this.bundle.getString("statusBarMessage"), count, inProgress, success, failure));
+
+        progressField.setText(String.format("%d/%d", success, count));
 
         if(failure > 0) {
             statusLabel.setStyle("-fx-background-color: #FF0F0F; -fx-border-color: #0FFFFF;");
@@ -487,5 +520,35 @@ public class MainWindowController implements Initializable {
         PackingInfo row = tableView.getSelectionModel().getSelectedItem();
 
         FXUtil.alert(this.bundle.getString("info"), String.format(this.bundle.getString("tableRowInfo"), row.getWipno(), row.getText()));
+    }
+
+    private void showFailureDialog(String wipno, String errorMessage) {
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle("fx.bundle.Failure");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fx/Failure.fxml"), bundle);
+
+            Parent root = loader.load();
+
+            FailureWindowController controller = loader.getController();
+
+            controller.setWipno(wipno);
+            controller.setErrorMessage(errorMessage);
+
+            Stage stage = new Stage();
+
+            stage.setTitle(bundle.getString("title"));
+            stage.setScene(new Scene(root));
+
+            stage.getScene().setUserData(wipno);
+
+            stage.initOwner(tableView.getScene().getWindow());
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            logger.info("result : {}", controller.getResult());
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 }

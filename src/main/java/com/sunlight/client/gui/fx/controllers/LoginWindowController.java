@@ -1,6 +1,5 @@
 package com.sunlight.client.gui.fx.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sunlight.client.ClientApplication;
 import com.sunlight.client.api.TaharaService;
 import com.sunlight.client.gui.fx.vo.ClientConfiguration;
@@ -25,8 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 

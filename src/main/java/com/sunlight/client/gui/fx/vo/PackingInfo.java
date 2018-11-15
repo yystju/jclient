@@ -3,7 +3,11 @@ package com.sunlight.client.gui.fx.vo;
 import com.sunlight.client.vo.Message;
 
 public class PackingInfo {
+    private String sequence;
     private String status;
+
+    private long start;
+    private long end;
 
     private Message request;
     private Message response;
@@ -16,6 +20,10 @@ public class PackingInfo {
         return this.request != null ? this.request.getBody().getPcb().getBarcode() : null;
     }
 
+    public String getInterval() {
+        return end > start ? String.format("%f", ((float)(end - start)) / 1000.0f) : "-";
+    }
+
     public String getStatus() {
         return status;
     }
@@ -25,7 +33,7 @@ public class PackingInfo {
     }
 
     public String getText() {
-        return this.response != null ? this.response.getBody().getResult().getErrorText() : null;
+        return this.response != null ? String.format("%s: %s", this.response.getBody().getResult().getErrorCode(), this.response.getBody().getResult().getErrorText()) : null;
     }
 
     public Message getRequest() {
@@ -42,5 +50,29 @@ public class PackingInfo {
 
     public void setResponse(Message response) {
         this.response = response;
+    }
+
+    public String getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(String sequence) {
+        this.sequence = sequence;
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public void setStart(long start) {
+        this.start = start;
+    }
+
+    public long getEnd() {
+        return end;
+    }
+
+    public void setEnd(long end) {
+        this.end = end;
     }
 }

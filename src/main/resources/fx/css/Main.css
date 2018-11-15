@@ -1,3 +1,7 @@
+#main {
+    -fx-font: normal bold 20px 'serif';
+}
+
 .row-red {
     -fx-background-color: red ;
 }

@@ -1,6 +1,7 @@
 package com.sunlight.client.util;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
 
 import java.util.Optional;
@@ -13,6 +14,12 @@ public class FXUtil {
         a.setResizable(true);
         //a.setContentText(text);
         a.showAndWait();
+    }
+
+    public static boolean choice(String title, String text) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION, text, ButtonType.CANCEL, ButtonType.OK);
+        a.showAndWait();
+        return (a.getResult() == ButtonType.OK);
     }
 
     public static void error(String title, String text) {

@@ -67,7 +67,7 @@ public class ClientConfigurationUtil {
         }
     }
 
-    public static void saveClientConfiguration(String equipmentName, String username, String productNumber, String productBIN, String packingSN) {
+    public static void saveClientConfiguration(String equipmentName, String username, String productNumber, String productBIN, String packingSN, long packageSequence) {
         File clientConfigurationFile = new File("./client.json");
 
         ObjectMapper mapper = new ObjectMapper();
