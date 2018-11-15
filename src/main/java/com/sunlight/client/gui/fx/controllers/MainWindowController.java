@@ -29,7 +29,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import javafx.stage.StageStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -40,7 +40,6 @@ import java.awt.*;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Predicate;
 
 public class MainWindowController implements Initializable {
     public static final String STATUS_FAILURE = "Ê§°Ü";
@@ -218,6 +217,7 @@ public class MainWindowController implements Initializable {
     }
 
     public void onBtnNewPackingClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnNewPackingClicked]");
         String sn = packageSNField.getText().trim();
 
         if(!StringUtils.isEmpty(sn)) {
@@ -229,6 +229,7 @@ public class MainWindowController implements Initializable {
     }
 
     public void onBtnClosePackingClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnClosePackingClicked]");
         String sn = packageSNField.getText().trim();
         ObservableList<PackingInfo> infoList = tableView.getItems();
 
@@ -244,17 +245,7 @@ public class MainWindowController implements Initializable {
     }
 
     public void onBtnUnPackingClicked(MouseEvent mouseEvent) {
-        String sn = packageSNField.getText().trim();
-        ObservableList<PackingInfo> infoList = tableView.getItems();
-
-        int count = infoList.size();
-        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
-
-        if(success < count) {
-            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
-            return;
-        }
-
+        logger.info("[MainWindowController.onBtnUnPackingClicked]");
         do10012("3");
     }
 
@@ -543,13 +534,19 @@ public class MainWindowController implements Initializable {
 
         String sn = packageSNField.getText();
 
-        String ret = FXUtil.input(this.bundle.getString("unpackingInputTitle"), this.bundle.getString("unpackingInputInfo"), sn);
+        if("3".equals(state)) {
+            String ret = FXUtil.input(this.bundle.getString("unpackingInputTitle"), this.bundle.getString("unpackingInputInfo"), sn);
 
-        if(ret != null) {
-            sn = ret;
+            if(ret != null) {
+                sn = ret;
+            } else {
+                return;
+            }
         }
 
         final String finalSN = sn;
+
+        final Stage waitingDialog = openWaitingDialog();
 
         Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
             String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
@@ -590,6 +587,8 @@ public class MainWindowController implements Initializable {
                     }
 
                     Platform.runLater(() -> {
+                        waitingDialog.getScene().getWindow().hide();
+
                         if(!"0".equals(result.getBody().getResult().getErrorCode())) {
                             FXUtil.error(this.bundle.getString("error"), String.format(this.bundle.getString("errorOccurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
                             return;
@@ -646,13 +645,12 @@ public class MainWindowController implements Initializable {
 
             controller.setWipno(wipno);
             controller.setErrorMessage(errorMessage);
+            controller.setClientConfiguration(clientConfiguration);
 
             Stage stage = new Stage();
 
             stage.setTitle(bundle.getString("title"));
             stage.setScene(new Scene(root));
-
-            stage.getScene().setUserData(wipno);
 
             stage.initOwner(tableView.getScene().getWindow());
             stage.initModality(Modality.APPLICATION_MODAL);
@@ -663,5 +661,31 @@ public class MainWindowController implements Initializable {
         catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    private Stage openWaitingDialog() {
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle("fx.bundle.InProgress");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fx/InProgress.fxml"), bundle);
+
+            Parent root = loader.load();
+
+            InProgressWindowController controller = loader.getController();
+
+            Stage stage = new Stage(StageStyle.UNDECORATED);
+
+            stage.setScene(new Scene(root));
+
+            stage.initOwner(tableView.getScene().getWindow());
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+
+            return stage;
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return null;
     }
 }

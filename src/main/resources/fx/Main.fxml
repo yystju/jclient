@@ -45,7 +45,7 @@
     <center>
         <TableView fx:id="tableView" onMousePressed="#onTableMousePressed" onKeyPressed="#onTableKeyPressed" prefHeight="640.0">
             <columns>
-                <TableColumn fx:id="columnSequece" prefWidth="100.0" text="%columnName">
+                <TableColumn fx:id="columnSequece" prefWidth="100.0" text="%columnSequence">
                     <cellValueFactory>
                         <PropertyValueFactory property="sequence" />
                     </cellValueFactory>
