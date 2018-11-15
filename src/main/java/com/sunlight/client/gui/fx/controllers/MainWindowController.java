@@ -503,7 +503,6 @@ public class MainWindowController implements Initializable {
                     Platform.runLater(() -> {
                         if(!"0".equals(result.getBody().getResult().getErrorCode())) {
                             FXUtil.error(this.bundle.getString("error"), String.format(this.bundle.getString("errorOccurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
-                            packageSNField.setText("");
                             return;
                         }
 
