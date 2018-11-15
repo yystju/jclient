@@ -14,29 +14,41 @@
 
 <!--https://www.oracle.com/technetwork/java/javase/downloads/javafxscenebuilder-1x-archive-2199384.html-->
 
-<BorderPane fx:id="main" prefHeight="720.0" prefWidth="1280.0" styleClass="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sunlight.client.gui.fx.controllers.MainWindowController">
+<?import javafx.scene.layout.Pane?>
+<BorderPane fx:id="main" prefHeight="800.0" prefWidth="1200.0" styleClass="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sunlight.client.gui.fx.controllers.MainWindowController">
     <top>
         <GridPane>
-            <gridLinesVisible>true</gridLinesVisible>
+            <gridLinesVisible>false</gridLinesVisible>
             <columnConstraints>
-                <ColumnConstraints prefWidth="120.0" />
-                <ColumnConstraints prefWidth="750" />
-                <ColumnConstraints prefWidth="200.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
                 <ColumnConstraints prefWidth="100.0" />
                 <ColumnConstraints prefWidth="100.0" />
                 <ColumnConstraints prefWidth="100.0" />
             </columnConstraints>
 
-            <Label text="%packageSN" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <Label fx:id="packageSNField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            <Label fx:id="progressField" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <Button prefHeight="4.0" prefWidth="200.0" text="%startPackingButton" GridPane.columnIndex="3" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnNewPackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="4" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnClosePackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%unpackingButton" GridPane.columnIndex="5" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnUnPackingClicked"/>
+            <Label text="%packageSN" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="0" focusTraversable="false"/>
+            <TextField editable="false" fx:id="packageSNField" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="9" focusTraversable="false"/>
+            <TextField editable="false" fx:id="progressField" GridPane.columnIndex="10" GridPane.rowIndex="0" GridPane.columnSpan="2" focusTraversable="false"/>
 
             <Label text="%wipno" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="1" />
-         <rowConstraints>
+            <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="11" GridPane.rowIndex="1" />
+
+            <Button prefHeight="4.0" prefWidth="200.0" text="%startPackingButton" GridPane.columnIndex="0" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnNewPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="1" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnClosePackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%openPackingButton" GridPane.columnIndex="2" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnOpenPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%sealPackingButton" GridPane.columnIndex="3" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnSealPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%unpackingButton" GridPane.columnIndex="4" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnUnPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%clearButton" GridPane.columnIndex="5" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnClearClicked"/>
+
+            <rowConstraints>
             <RowConstraints />
             <RowConstraints />
          </rowConstraints>
@@ -65,7 +77,7 @@
                         <PropertyValueFactory property="text" />
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="columnId" prefWidth="300.0" text="%columnId">
+                <TableColumn fx:id="columnId" prefWidth="200.0" text="%columnId">
                     <cellValueFactory>
                         <PropertyValueFactory property="transactionId" />
                     </cellValueFactory>
@@ -79,7 +91,7 @@
         </TableView>
     </center>
     <bottom>
-        <Label fx:id="statusLabel" prefWidth="800.0" style="-fx-border-color: #AAAAAA; -fx-border-width: 2.00; -fx-border-style: solid; " />
+        <Label fx:id="statusLabel" prefWidth="1200.0" style="-fx-border-color: #AAAAAA; -fx-border-width: 2.00; -fx-border-style: solid; " />
     </bottom>
     <stylesheets>
         <URL value="@css/Main.css" />

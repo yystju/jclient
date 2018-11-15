@@ -65,9 +65,9 @@ public class MainWindowController implements Initializable {
     @FXML
     Label statusLabel;
     @FXML
-    Label packageSNField;
+    TextField packageSNField;
     @FXML
-    Label progressField;
+    TextField progressField;
 
     private TaharaService taharaService;
     private ResourceBundle bundle;
@@ -228,8 +228,40 @@ public class MainWindowController implements Initializable {
         do10009();
     }
 
+    public void onBtnOpenPackingClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnOpenPackingClicked]");
+        String sn = packageSNField.getText().trim();
+        ObservableList<PackingInfo> infoList = tableView.getItems();
+
+        int count = infoList.size();
+        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
+
+        if(success < count) {
+            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
+            return;
+        }
+
+        do10012("0");
+    }
+
     public void onBtnClosePackingClicked(MouseEvent mouseEvent) {
         logger.info("[MainWindowController.onBtnClosePackingClicked]");
+        String sn = packageSNField.getText().trim();
+        ObservableList<PackingInfo> infoList = tableView.getItems();
+
+        int count = infoList.size();
+        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
+
+        if(success < count) {
+            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
+            return;
+        }
+
+        do10012("1");
+    }
+
+    public void onBtnSealPackingClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnSealPackingClicked]");
         String sn = packageSNField.getText().trim();
         ObservableList<PackingInfo> infoList = tableView.getItems();
 
@@ -247,6 +279,19 @@ public class MainWindowController implements Initializable {
     public void onBtnUnPackingClicked(MouseEvent mouseEvent) {
         logger.info("[MainWindowController.onBtnUnPackingClicked]");
         do10012("3");
+    }
+
+    public void onBtnClearClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnClearClicked]");
+        if(FXUtil.warningChoice(this.bundle.getString("warningClear"), this.bundle.getString("clearIsDangerous"))) {
+            this.packageSNField.setText("");
+            this.progressField.setText("");
+            this.packageSequence = 0;
+            this.clientConfiguration.setPackingSN("");
+            ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN(), this.clientConfiguration.getPackageSequence());
+
+            refreshStatusBar();
+        }
     }
 
     //---- BUSINESS ACTIONS ----
@@ -594,8 +639,10 @@ public class MainWindowController implements Initializable {
                             return;
                         }
 
-                        packageSNField.setText("");
-                        tableView.getItems().clear();
+                        if("2".equals(state)) {
+                            packageSNField.setText("");
+                            tableView.getItems().clear();
+                        }
                     });
                 });
             } catch (Exception ex) {
