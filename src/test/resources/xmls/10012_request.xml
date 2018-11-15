@@ -3,8 +3,8 @@
         <location routeID="1001" routeName="LINE1" equipmentID="1000" equipmentName="S02-L01-PACKGE-M1" zoneID="1001" zonePos="1" zoneName="packge" laneNo="0" controllerGuid="abcd12345678"/>
     </header>
     <body>
-        <product number="1.00.03.212-01-dssdadsadsdsadsa" label=""/>
-        <packageContainer number="" label="" state="" operator=""/>
+        <product number="" label=""/>
+        <packageContainer number="1.00.02.0115-03000201810300004" label="" state="" operator=""/>
     </body>
 </message>
 <!--

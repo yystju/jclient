@@ -24,6 +24,7 @@
                 <ColumnConstraints prefWidth="200.0" />
                 <ColumnConstraints prefWidth="100.0" />
                 <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="100.0" />
             </columnConstraints>
 
             <Label text="%packageSN" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -31,9 +32,10 @@
             <Label fx:id="progressField" GridPane.columnIndex="2" GridPane.rowIndex="0" />
             <Button prefHeight="4.0" prefWidth="200.0" text="%startPackingButton" GridPane.columnIndex="3" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnNewPackingClicked"/>
             <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="4" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnClosePackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%unpackingButton" GridPane.columnIndex="5" GridPane.rowIndex="0" focusTraversable="false" onMouseClicked="#onBtnUnPackingClicked"/>
 
             <Label text="%wipno" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="4" GridPane.rowIndex="1" />
+            <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="1" />
          <rowConstraints>
             <RowConstraints />
             <RowConstraints />

@@ -243,6 +243,21 @@ public class MainWindowController implements Initializable {
         do10012("2");
     }
 
+    public void onBtnUnPackingClicked(MouseEvent mouseEvent) {
+        String sn = packageSNField.getText().trim();
+        ObservableList<PackingInfo> infoList = tableView.getItems();
+
+        int count = infoList.size();
+        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
+
+        if(success < count) {
+            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
+            return;
+        }
+
+        do10012("3");
+    }
+
     //---- BUSINESS ACTIONS ----
 
     private void do5018() {
@@ -523,8 +538,18 @@ public class MainWindowController implements Initializable {
         });
     }
 
-    private void do10012(String state) { //箱子状态 = 0 : 装箱中, 1 : 装完, 2 : 封箱, 3 : 报废
+    private void do10012(String state) { //箱子状态 = 0 : 装箱中, 1 : 装完, 2 : 封箱, 3 : 报废 // 3就是拆箱。
         final String equipmentName = this.taharaService.getEquipmentName();
+
+        String sn = packageSNField.getText();
+
+        String ret = FXUtil.input(this.bundle.getString("unpackingInputTitle"), this.bundle.getString("unpackingInputInfo"), sn);
+
+        if(ret != null) {
+            sn = ret;
+        }
+
+        final String finalSN = sn;
 
         Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
             String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
@@ -547,7 +572,7 @@ public class MainWindowController implements Initializable {
             message.getBody().getProduct().setNumber(this.clientConfiguration.getProductNumber());
             message.getBody().getProduct().setLabel("");
 
-            message.getBody().getPackageContainer().setNumber(packageSNField.getText());
+            message.getBody().getPackageContainer().setNumber(finalSN);
             message.getBody().getPackageContainer().setState(state);
 
             emitter.onNext(message);
