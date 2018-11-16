@@ -90,7 +90,9 @@ public class FailureWindowController implements Initializable {
                 logger.info("choice : {}", choice);
 
                 if(choice) {
-                    do10010(clientConfiguration.getPackingSN(), wipno);
+//                    do10010(clientConfiguration.getPackingSN(), wipno);
+                    this.result = this.wipno;
+                    this.mainPane.getScene().getWindow().hide();
                 }
             } else if ("-".equals(line)) {
                 ((Node)(event.getSource())).getScene().getWindow().hide();
@@ -105,73 +107,73 @@ public class FailureWindowController implements Initializable {
         }
     }
 
-    private void do10010(String sn, String wipno) {
-        if(StringUtils.isEmpty(sn)) {
-            return;
-        }
-
-        if(StringUtils.isEmpty(wipno)) {
-            return;
-        }
-
-        final String equipmentName = this.clientConfiguration.getEquipmentName();
-
-        logger.info("[MainWindowController.do10010] sn : {}, wipno : {}, equipmentName : {}", sn, wipno, equipmentName);
-
-
-        Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
-            String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
-
-            Message message = new Message();
-
-            message.setBody(new Body());
-            message.setHeader(new Header());
-            message.getHeader().setLocation(new Location());
-            message.getBody().setProduct(new Product());
-            message.getBody().setPackageContainer(new PackageContainer());
-
-            message.getHeader().setMessageClass("10010");
-            message.getHeader().setReply(1);
-            message.getHeader().setTransactionID(transactionId);
-            message.getHeader().getLocation().setRouteName(equipmentName);
-            message.getHeader().getLocation().setEquipmentName(equipmentName);
-            message.getHeader().getLocation().setZoneName(equipmentName);
-
-            message.getBody().getPackageContainer().setNumber(sn);
-            message.getBody().getPackageContainer().setType("0"); // 0 - 出箱， 1 - 入箱。
-            message.getBody().getProduct().setNumber(wipno);
-
-            emitter.onNext(message);
-            emitter.onComplete();
-        })
-        .subscribeOn(Schedulers.computation())
-        .observeOn(Schedulers.io())
-        .subscribe(request -> {
-            try {
-                taharaService.process10010(request, (Message result) -> {
-                    logger.info("{} :: {}", request.getHeader().getTransactionID(), result.getHeader().getTransactionID());
-
-                    if(!request.getHeader().getTransactionID().equals(result.getHeader().getTransactionID())) {
-                        return;
-                    }
-
-                    Platform.runLater(() -> {
-                        if(!"0".equals(result.getBody().getResult().getErrorCode())) {
-                            FXUtil.error(this.bundle.getString("alert.error.title"), String.format(this.bundle.getString("alert.error.occurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
-                            return;
-                        }
-
-                        this.mainPane.getScene().getWindow().hide();
-                    });
-                });
-            } catch (Exception ex) {
-                logger.error(ex.getMessage(), ex);
-                Platform.runLater(() -> {
-                    FXUtil.alert(bundle.getString("alert.error.title"), String.format(bundle.getString("alert.error.occurred"), ex.getMessage()));
-                });
-            }
-        });
-    }
+//    private void do10010(String sn, String wipno) {
+//        if(StringUtils.isEmpty(sn)) {
+//            return;
+//        }
+//
+//        if(StringUtils.isEmpty(wipno)) {
+//            return;
+//        }
+//
+//        final String equipmentName = this.clientConfiguration.getEquipmentName();
+//
+//        logger.info("[MainWindowController.do10010] sn : {}, wipno : {}, equipmentName : {}", sn, wipno, equipmentName);
+//
+//
+//        Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
+//            String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
+//
+//            Message message = new Message();
+//
+//            message.setBody(new Body());
+//            message.setHeader(new Header());
+//            message.getHeader().setLocation(new Location());
+//            message.getBody().setProduct(new Product());
+//            message.getBody().setPackageContainer(new PackageContainer());
+//
+//            message.getHeader().setMessageClass("10010");
+//            message.getHeader().setReply(1);
+//            message.getHeader().setTransactionID(transactionId);
+//            message.getHeader().getLocation().setRouteName(equipmentName);
+//            message.getHeader().getLocation().setEquipmentName(equipmentName);
+//            message.getHeader().getLocation().setZoneName(equipmentName);
+//
+//            message.getBody().getPackageContainer().setNumber(sn);
+//            message.getBody().getPackageContainer().setType("0"); // 0 - 出箱， 1 - 入箱。
+//            message.getBody().getProduct().setNumber(wipno);
+//
+//            emitter.onNext(message);
+//            emitter.onComplete();
+//        })
+//        .subscribeOn(Schedulers.computation())
+//        .observeOn(Schedulers.io())
+//        .subscribe(request -> {
+//            try {
+//                taharaService.process10010(request, (Message result) -> {
+//                    logger.info("{} :: {}", request.getHeader().getTransactionID(), result.getHeader().getTransactionID());
+//
+//                    if(!request.getHeader().getTransactionID().equals(result.getHeader().getTransactionID())) {
+//                        return;
+//                    }
+//
+//                    Platform.runLater(() -> {
+//                        if(!"0".equals(result.getBody().getResult().getErrorCode())) {
+//                            FXUtil.error(this.bundle.getString("alert.error.title"), String.format(this.bundle.getString("alert.error.occurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
+//                            return;
+//                        }
+//
+//                        this.mainPane.getScene().getWindow().hide();
+//                    });
+//                });
+//            } catch (Exception ex) {
+//                logger.error(ex.getMessage(), ex);
+//                Platform.runLater(() -> {
+//                    FXUtil.alert(bundle.getString("alert.error.title"), String.format(bundle.getString("alert.error.occurred"), ex.getMessage()));
+//                });
+//            }
+//        });
+//    }
 
     public String getWipno() {
         return wipno;

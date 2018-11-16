@@ -1,6 +1,7 @@
 package com.sunlight.client.gui.fx.controllers;
 
 import com.sunlight.client.ClientApplication;
+import com.sunlight.client.api.MessageCallback;
 import com.sunlight.client.api.TaharaService;
 import com.sunlight.client.gui.fx.vo.ClientConfiguration;
 import com.sunlight.client.gui.fx.vo.PackingInfo;
@@ -38,12 +39,16 @@ import org.springframework.util.StringUtils;
 
 import java.awt.*;
 import java.net.URL;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class MainWindowController implements Initializable {
+    public static final String STATUS_INIT = "预捡中";
     public static final String STATUS_FAILURE = "失败";
     public static final String STATUS_SUCCESS = "成功";
+    public static final String STATUS_PRCEEDED = "已处理";
+
     private static Logger logger = LoggerFactory.getLogger(MainWindowController.class);
 
     @FXML
@@ -73,9 +78,21 @@ public class MainWindowController implements Initializable {
     private ResourceBundle bundle;
     private String side;
     private String scannerSide;
+
     private long packageSequence;
 
+    private long packageQuantity;
+    private long packageCapacity;
+
+//    private long inprogressCounter;
+//    private long successCounter;
+//    private long failedCounter;
+//    private long proceededCounter;
+
+    private Map<String, String> statusMap = new HashMap<>();
+
     private ClientConfiguration clientConfiguration;
+    private Stage finishPackingWaitingDialog;
 
     @Override
     public void initialize(URL location, ResourceBundle bundle) {
@@ -120,6 +137,8 @@ public class MainWindowController implements Initializable {
 
                     if(STATUS_SUCCESS.equals(item)) {
                         getTableRow().setStyle("-fx-background-color: #90EE90;");
+                    } else if(STATUS_PRCEEDED.equals(item)) {
+                        getTableRow().setStyle("-fx-background-color: #9090EE;");
                     } else if(STATUS_FAILURE.equals(item)) {
                         getTableRow().setStyle("-fx-background-color: #FF0F0F;");
                     } else {
@@ -144,22 +163,22 @@ public class MainWindowController implements Initializable {
             });
         });
 
+        clearPage();
+
         this.clientConfiguration = ClientConfigurationUtil.getClientConfiguration();
 
         if(!StringUtils.isEmpty(this.clientConfiguration.getPackingSN())) {
             this.packageSNField.setText(this.clientConfiguration.getPackingSN());
+
+            do10011(null);
         }
-
-        this.packageSequence = this.clientConfiguration.getPackageSequence();
-
-        logger.info("packageSequence : {}", packageSequence);
     }
 
     //---- EVENT HANDLERs ----
 
     public void onWipFieldKeyPress(KeyEvent event) {
         if(event.getCode() == KeyCode.ENTER) {
-            do5018();
+            do5018(null);
         }
     }
 
@@ -176,36 +195,34 @@ public class MainWindowController implements Initializable {
                 deleteMenuItem.setOnAction((ActionEvent evt) -> {
                     if(FXUtil.warningChoice(this.bundle.getString("warningDelete"), this.bundle.getString("deleteIsDangerous"))) {
                         tableView.getItems().remove(tableView.getSelectionModel().getSelectedItem());
-                        refreshStatusBar();
+                        refreshStatusInfo();
                     }
                 });
                 cm.getItems().add(deleteMenuItem);
 
-//                MenuItem resendMenuItem = new MenuItem("重发");
-//                resendMenuItem.setOnAction((ActionEvent evt) -> {
-//                    PackingInfo selected = tableView.getSelectionModel().getSelectedItem();
-//
-//                    wipnoField.setText(selected.getWipno());
-//
-//                    do5018();
-//
-//                    refreshStatusBar();
-//                });
-//                cm.getItems().add(resendMenuItem);
+                MenuItem proceededMenuItem = new MenuItem("已处理");
+                proceededMenuItem.setOnAction((ActionEvent evt) -> {
+                    tableView.getSelectionModel().getSelectedItem().setStatus(STATUS_PRCEEDED);
+                    tableView.refresh();
+                    refreshStatusInfo();
+//                    this.proceededCounter++;
+                    statusMap.put(tableView.getSelectionModel().getSelectedItem().getWipno(), STATUS_PRCEEDED);
+                });
+                cm.getItems().add(proceededMenuItem);
             }
 
-            MenuItem propertyMenuItem = new MenuItem("属性");
-            propertyMenuItem.setOnAction((ActionEvent evt) -> {
-                showProperties();
-            });
-            cm.getItems().add(propertyMenuItem);
-
-            MenuItem deleteMenuItem = new MenuItem("出箱");
-            deleteMenuItem.setOnAction((ActionEvent evt) -> {
-                do10010(tableView.getSelectionModel().getSelectedItem().getWipno());
-            });
-            cm.getItems().add(deleteMenuItem);
-
+//            MenuItem propertyMenuItem = new MenuItem("属性");
+//            propertyMenuItem.setOnAction((ActionEvent evt) -> {
+//                showProperties();
+//            });
+//            cm.getItems().add(propertyMenuItem);
+//
+//            MenuItem deleteMenuItem = new MenuItem("出箱");
+//            deleteMenuItem.setOnAction((ActionEvent evt) -> {
+//                do10010(tableView.getSelectionModel().getSelectedItem().getWipno());
+//            });
+//            cm.getItems().add(deleteMenuItem);
+//
             cm.show(tableView, event.getScreenX(), event.getScreenY());
         }
     }
@@ -216,35 +233,7 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    public void onBtnNewPackingClicked(MouseEvent mouseEvent) {
-        logger.info("[MainWindowController.onBtnNewPackingClicked]");
-        String sn = packageSNField.getText().trim();
-
-        if(!StringUtils.isEmpty(sn)) {
-            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("alreadyAssigned"));
-            return;
-        }
-
-        do10009();
-    }
-
-    public void onBtnOpenPackingClicked(MouseEvent mouseEvent) {
-        logger.info("[MainWindowController.onBtnOpenPackingClicked]");
-        String sn = packageSNField.getText().trim();
-        ObservableList<PackingInfo> infoList = tableView.getItems();
-
-        int count = infoList.size();
-        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
-
-        if(success < count) {
-            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
-            return;
-        }
-
-        do10012("0");
-    }
-
-    public void onBtnClosePackingClicked(MouseEvent mouseEvent) {
+    public void onBtnFinishPackingClicked(MouseEvent mouseEvent) {
         logger.info("[MainWindowController.onBtnClosePackingClicked]");
         String sn = packageSNField.getText().trim();
         ObservableList<PackingInfo> infoList = tableView.getItems();
@@ -260,20 +249,14 @@ public class MainWindowController implements Initializable {
         do10012("1");
     }
 
-    public void onBtnSealPackingClicked(MouseEvent mouseEvent) {
-        logger.info("[MainWindowController.onBtnSealPackingClicked]");
-        String sn = packageSNField.getText().trim();
-        ObservableList<PackingInfo> infoList = tableView.getItems();
+    public void onBtnPullOutClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnPullOutClicked]");
 
-        int count = infoList.size();
-        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
+        String wipno = FXUtil.input(this.bundle.getString("pullOutInputTitle"), this.bundle.getString("pullOutInputInfo"), wipnoField.getText());
 
-        if(success < count) {
-            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
-            return;
+        if(wipno != null) {
+            do10010(wipno);
         }
-
-        do10012("2");
     }
 
     public void onBtnUnPackingClicked(MouseEvent mouseEvent) {
@@ -281,31 +264,102 @@ public class MainWindowController implements Initializable {
         do10012("3");
     }
 
-    public void onBtnClearClicked(MouseEvent mouseEvent) {
-        logger.info("[MainWindowController.onBtnClearClicked]");
-        if(FXUtil.warningChoice(this.bundle.getString("warningClear"), this.bundle.getString("clearIsDangerous"))) {
-            this.packageSNField.setText("");
-            this.progressField.setText("");
-            this.packageSequence = 0;
-            this.clientConfiguration.setPackingSN("");
-            ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN(), this.clientConfiguration.getPackageSequence());
+    public void onBtnOpenPackingClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnOpenPackingClicked]");
+        String sn = packageSNField.getText().trim();
 
-            refreshStatusBar();
+        if(!StringUtils.isEmpty(sn)) {
+            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExistedWhileOpening"));
+            return;
         }
+
+        do10012("0");
     }
 
-    //---- BUSINESS ACTIONS ----
+    public void onBtnFetchBackClicked(MouseEvent mouseEvent) {
+        logger.info("[MainWindowController.onBtnFetchBackClicked]");
 
-    private void do5018() {
-        final String sn = packageSNField.getText().trim();
+        String sn = packageSNField.getText();
 
         if(StringUtils.isEmpty(sn)) {
             FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("snEmpty"));
             return;
         }
 
+        do10011(null);
+    }
+
+//    public void onBtnNewPackingClicked(MouseEvent mouseEvent) {
+//        logger.info("[MainWindowController.onBtnNewPackingClicked]");
+//        String sn = packageSNField.getText().trim();
+//
+//        if(!StringUtils.isEmpty(sn)) {
+//            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("alreadyAssigned"));
+//            return;
+//        }
+//
+//        do10009();
+//    }
+
+//    public void onBtnSealPackingClicked(MouseEvent mouseEvent) {
+//        logger.info("[MainWindowController.onBtnSealPackingClicked]");
+//        String sn = packageSNField.getText().trim();
+//        ObservableList<PackingInfo> infoList = tableView.getItems();
+//
+//        int count = infoList.size();
+//        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
+//
+//        if(success < count) {
+//            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
+//            return;
+//        }
+//
+//        do10012("2");
+//    }
+
+//    public void onBtnClearClicked(MouseEvent mouseEvent) {
+//        logger.info("[MainWindowController.onBtnClearClicked]");
+//        if(FXUtil.warningChoice(this.bundle.getString("warningClear"), this.bundle.getString("clearIsDangerous"))) {
+//            this.packageSNField.setText("");
+//            this.progressField.setText("");
+//            this.packageSequence = 0;
+//            this.clientConfiguration.setPackingSN("");
+//            ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN(), this.clientConfiguration.getPackageSequence());
+//
+//            refreshStatusInfo();
+//        }
+//    }
+
+    //---- BUSINESS ACTIONS ----
+
+    private void do5018(MessageCallback callback) {
+        final String sn = packageSNField.getText().trim();
         final String wipno = wipnoField.getText().trim();
-        logger.info("[MainWindowController.wipFieldKeyPress] wipno : {}", wipno);
+
+        logger.info("[MainWindowController.do5018] sn : {}, wipno : {}", sn, wipno);
+
+        if(StringUtils.isEmpty(sn)) {
+            //TODO: Need to change this to fetching product number and BIN from MES...
+            if(!StringUtils.isEmpty(wipno) && wipno.length() >= 26) {
+                String productName = wipno.substring(0, 15);
+                String BIN = wipno.substring(15, 18);
+
+                logger.info("[MainWindowController.do5018] productName : {}, BIN : {}", productName, BIN);
+
+                do10009(productName, BIN, result -> {
+                    do10011(result1 -> {
+                        do5018(callback);
+                    });
+                });
+
+                return;
+            }
+
+
+            FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("snEmpty"));
+            return;
+        }
+
         wipnoField.setText("");
 
         if(StringUtils.isEmpty(wipno)) {
@@ -313,26 +367,31 @@ public class MainWindowController implements Initializable {
             return;
         }
 
-        final String equipmentName = this.taharaService.getEquipmentName();
+        final String equipmentName = this.clientConfiguration.getEquipmentName();
 
-        List<PackingInfo> existed = tableView.getItems().filtered(o -> wipno.equals(o.getWipno()));
-
-        PackingInfo tmp = null;
-
-        if(existed.size() == 0) {
-            tmp = new PackingInfo();
-            tmp.setSequence(String.format("%d", ++packageSequence));
-            tableView.getItems().add(tmp);
-        } else {
-            tmp = existed.get(0);
-        }
-
-        final PackingInfo packingInfo = tmp;
-
-        packingInfo.setStatus("预捡中");
+        final PackingInfo packingInfo = new PackingInfo();
+        packingInfo.setStatus(STATUS_INIT);
         packingInfo.setRequest(null);
         packingInfo.setResponse(null);
+        packingInfo.setSequence(String.format("%d", ++packageSequence));
         packingInfo.setStart(System.currentTimeMillis());
+
+//        ++inprogressCounter;
+//        logger.info("inprogressCounter : {}, successCounter : {}, failedCounter : {}, proceededCounter : {}", inprogressCounter, successCounter, failedCounter, proceededCounter);
+
+        statusMap.put(wipno, STATUS_INIT);
+        long inprogress = statusMap.entrySet().stream().filter(e -> e.getValue().equals(STATUS_INIT)).count() + this.packageQuantity;
+
+//        if(inprogressCounter >= this.packageCapacity) {
+        if(inprogress >= this.packageCapacity) {
+            logger.info("Met Package Capacity {} (inprogressCounter : {}). Will block the new input and trigger finishing packing operation...", this.packageCapacity, inprogress);
+
+            if(this.finishPackingWaitingDialog == null) {
+                this.finishPackingWaitingDialog = openWaitingDialog();
+            }
+        }
+
+        tableView.getItems().add(packingInfo);
 
         Observable.create((ObservableOnSubscribe<PackingInfo>) (emitter) -> {
             String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
@@ -358,20 +417,7 @@ public class MainWindowController implements Initializable {
             message.getBody().getPcb().setModelCode(wipno);
             message.getBody().getPcb().setPcbSide(this.side);
             message.getBody().getPcb().setScannerMountSide(this.scannerSide);
-            message.getBody().getPcb().setSerialNo(packingInfo.getSequence());
-
-//            message.getHeader().setMessageClass("501");
-//            message.getHeader().setReply(1);
-//            message.getHeader().setTransactionID(transactionId);
-//            message.getHeader().getLocation().setEquipmentName(equipmentName);
-//            message.getHeader().getLocation().setRouteName(equipmentName);
-//            message.getHeader().getLocation().setZoneName(equipmentName);
-//
-//            message.getBody().getPcb().setBarcode(wipno);
-//            message.getBody().getPcb().setModelCode(wipno);
-//            message.getBody().getPcb().setSerialNo(wipno);
-//            message.getBody().getPcb().setPcbSide(this.side);
-//            message.getBody().getPcb().setScannerMountSide(this.scannerSide);
+            message.getBody().getPcb().setSerialNo(String.format("%d", inprogress));
 
             packingInfo.setRequest(message);
 
@@ -391,24 +437,40 @@ public class MainWindowController implements Initializable {
 
                     packingInfo1.setEnd(System.currentTimeMillis());
                     packingInfo1.setResponse(result);
-                    packingInfo1.setStatus(result != null ? ("0".equals(result.getBody().getResult().getErrorCode()) ? STATUS_SUCCESS : STATUS_FAILURE) : "预捡中");
+                    packingInfo1.setStatus(result != null ? ("0".equals(result.getBody().getResult().getErrorCode()) ? STATUS_SUCCESS : STATUS_FAILURE) : STATUS_INIT);
+
+                    statusMap.put(wipno, packingInfo1.getStatus());
+
+                    if(STATUS_SUCCESS.equals(packingInfo1.getStatus())) {
+//                        successCounter++;
+
+                        long quantity = this.packageQuantity + statusMap.entrySet().stream().filter(e -> e.getValue().equals(STATUS_SUCCESS)).count();
+
+                        logger.info("quantity : {}", quantity);
+
+                        if(quantity == this.packageCapacity) {
+                            do10012("1");
+                        }
+                    } else if(STATUS_FAILURE.equals(packingInfo1.getStatus())) {
+//                        failedCounter++;
+                    }
+
+                    if(callback != null) {
+                        callback.onReceived(result);
+                    }
 
                     Platform.runLater(() -> {
                         tableView.refresh();
                         tableView.scrollTo(tableView.getItems().size() - 1);
 
-                        refreshStatusBar();
+                        refreshStatusInfo();
 
                         if(STATUS_FAILURE.equals(packingInfo1.getStatus())) {
                             //TODO: Maybe play a short mp3 sound will be better.
                             Toolkit.getDefaultToolkit().beep();
-
-                            showFailureDialog(packingInfo1.getWipno(), packingInfo1.getText());
+                            showFailureDialog(packingInfo1);
                         }
                     });
-
-                    this.clientConfiguration.setPackageSequence(this.packageSequence);
-                    ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN(), this.clientConfiguration.getPackageSequence());
                 });
             } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);
@@ -419,17 +481,17 @@ public class MainWindowController implements Initializable {
         });
     }
 
-    private void do10009() {
-        final String equipmentName = this.taharaService.getEquipmentName();
+    private void do10009(String productNumber, String productBin, MessageCallback callback) {
+        final String equipmentName = this.clientConfiguration.getEquipmentName();
 
-        final String productNumber = FXUtil.input(this.bundle.getString("inputProductNumber"), this.bundle.getString("inputProductNumber"), this.clientConfiguration.getProductNumber());
+//        final String productNumber = FXUtil.input(this.bundle.getString("inputProductNumber"), this.bundle.getString("inputProductNumber"), this.clientConfiguration.getProductNumber());
 
         if(StringUtils.isEmpty(productNumber)) {
             FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("productNumberEmpty"));
             return;
         }
 
-        final String productBin = FXUtil.input(this.bundle.getString("inputProductBIN"), this.bundle.getString("inputProductBIN"), this.clientConfiguration.getProductBIN());
+//        final String productBin = FXUtil.input(this.bundle.getString("inputProductBIN"), this.bundle.getString("inputProductBIN"), this.clientConfiguration.getProductBIN());
 
         if(StringUtils.isEmpty(productBin)) {
             FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("productBINEmpty"));
@@ -438,10 +500,6 @@ public class MainWindowController implements Initializable {
 
         Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
             String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
-
-            this.clientConfiguration.setProductNumber(productNumber);
-            this.clientConfiguration.setProductBIN(productBin);
-            ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN());
 
             Message message = new Message();
 
@@ -467,7 +525,7 @@ public class MainWindowController implements Initializable {
         .observeOn(Schedulers.io())
         .subscribe(request -> {
             try {
-                taharaService.startPacking(request, (Message result) -> {
+                taharaService.process10009(request, (Message result) -> {
                     logger.info("{} :: {}", request.getHeader().getTransactionID(), result.getHeader().getTransactionID());
 
                     if(!request.getHeader().getTransactionID().equals(result.getHeader().getTransactionID())) {
@@ -484,9 +542,13 @@ public class MainWindowController implements Initializable {
                         packageSNField.setText(result.getBody().getPackageContainer().getNumber());
                         packageSequence = 0;
 
-                        this.clientConfiguration.setPackageSequence(packageSequence);
+                        //xx
                         this.clientConfiguration.setPackingSN(result.getBody().getPackageContainer().getNumber());
-                        ClientConfigurationUtil.saveClientConfiguration(this.clientConfiguration.getEquipmentName(), this.clientConfiguration.getUsername(), this.clientConfiguration.getProductNumber(), this.clientConfiguration.getProductBIN(), this.clientConfiguration.getPackingSN(), this.clientConfiguration.getPackageSequence());
+                        ClientConfigurationUtil.saveClientConfiguration();
+
+                        if(callback != null) {
+                            callback.onReceived(result);
+                        }
                     });
                 });
             } catch (Exception ex) {
@@ -513,7 +575,7 @@ public class MainWindowController implements Initializable {
             return;
         }
 
-        final String equipmentName = this.taharaService.getEquipmentName();
+        final String equipmentName = this.clientConfiguration.getEquipmentName();
 
         Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
             String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
@@ -557,12 +619,99 @@ public class MainWindowController implements Initializable {
                             return;
                         }
 
-                        tableView.getItems().removeAll(tableView.getItems().filtered(packingInfo -> wipno.equals(packingInfo.getWipno())));
+                        tableView.getItems().filtered(packingInfo -> wipno.equals(packingInfo.getWipno())).forEach(packingInfo -> {
+//                            this.proceededCounter++;
+                            packingInfo.setStatus(STATUS_PRCEEDED);
+                            statusMap.put(packingInfo.getWipno(), packingInfo.getStatus());
+                        });
 
                         tableView.refresh();
-                        //tableView.scrollTo(tableView.getItems().size() - 1);
+                        refreshStatusInfo();
+                    });
+                });
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+                Platform.runLater(() -> {
+                    FXUtil.alert(bundle.getString("error"), String.format(bundle.getString("exceptionOccurred"), ex.getMessage()));
+                });
+            }
+        });
+    }
 
-                        refreshStatusBar();
+    private void do10011(MessageCallback callback) {
+        final String equipmentName = this.clientConfiguration.getEquipmentName();
+
+        final String sn = packageSNField.getText();
+
+        if(this.finishPackingWaitingDialog == null) {
+            this.finishPackingWaitingDialog = openWaitingDialog();
+        }
+
+        Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
+            String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
+
+            Message message = new Message();
+
+            message.setBody(new Body());
+            message.setHeader(new Header());
+            message.getHeader().setLocation(new Location());
+            message.getBody().setProduct(new Product());
+            message.getBody().setPackageContainer(new PackageContainer());
+
+            message.getHeader().setMessageClass("10011");
+            message.getHeader().setReply(1);
+            message.getHeader().setTransactionID(transactionId);
+            message.getHeader().getLocation().setRouteName(equipmentName);
+            message.getHeader().getLocation().setEquipmentName(equipmentName);
+            message.getHeader().getLocation().setZoneName(equipmentName);
+
+//            message.getBody().getProduct().setNumber(finalProductNumber);
+            message.getBody().getPackageContainer().setNumber(sn);
+
+            emitter.onNext(message);
+            emitter.onComplete();
+        })
+        .subscribeOn(Schedulers.computation())
+        .observeOn(Schedulers.io())
+        .subscribe(request -> {
+            try {
+                taharaService.process10011(request, (Message result) -> {
+                    logger.info("{} :: {}", request.getHeader().getTransactionID(), result.getHeader().getTransactionID());
+
+                    if(!request.getHeader().getTransactionID().equals(result.getHeader().getTransactionID())) {
+                        return;
+                    }
+
+                    Platform.runLater(() -> {
+                        if(!"0".equals(result.getBody().getResult().getErrorCode())) {
+                            FXUtil.error(this.bundle.getString("error"), String.format(this.bundle.getString("errorOccurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
+                            return;
+                        }
+
+                        String quantityStr = result.getBody().getPackageContainer().getQuantity();
+                        String capacityStr = result.getBody().getPackageContainer().getCapacity();
+
+                        try {
+                            this.packageQuantity = Long.parseLong(quantityStr);
+                            this.packageCapacity = Long.parseLong(capacityStr);
+                        } catch (NumberFormatException ex) {
+                            this.packageQuantity = 0;
+                            this.packageCapacity = 0;
+                        }
+
+                        logger.info("this.packageQuantity : {}, this.packageCapacity : {}", this.packageQuantity, this.packageCapacity);
+
+                        refreshStatusInfo();
+
+                        if(callback != null) {
+                            callback.onReceived(result);
+                        }
+
+                        Platform.runLater(() -> {
+                            if(this.finishPackingWaitingDialog != null) {
+                                this.finishPackingWaitingDialog.getScene().getWindow().hide();
+                            }
+                        });
                     });
                 });
             } catch (Exception ex) {
@@ -575,7 +724,7 @@ public class MainWindowController implements Initializable {
     }
 
     private void do10012(String state) { //箱子状态 = 0 : 装箱中, 1 : 装完, 2 : 封箱, 3 : 报废 // 3就是拆箱。
-        final String equipmentName = this.taharaService.getEquipmentName();
+        final String equipmentName = this.clientConfiguration.getEquipmentName();
 
         String sn = packageSNField.getText();
 
@@ -587,11 +736,21 @@ public class MainWindowController implements Initializable {
             } else {
                 return;
             }
+        } else if ("0".equals(state)) {
+            String ret = FXUtil.input(this.bundle.getString("openingInputTitle"), this.bundle.getString("openingInputInfo"), sn);
+
+            if(ret != null) {
+                sn = ret;
+            } else {
+                return;
+            }
         }
 
         final String finalSN = sn;
 
-        final Stage waitingDialog = openWaitingDialog();
+        if(this.finishPackingWaitingDialog == null) {
+            this.finishPackingWaitingDialog = openWaitingDialog();
+        }
 
         Observable.create((ObservableOnSubscribe<Message>) (emitter) -> {
             String transactionId = String.format("%s-%d", equipmentName, System.currentTimeMillis());
@@ -624,7 +783,7 @@ public class MainWindowController implements Initializable {
         .observeOn(Schedulers.io())
         .subscribe(request -> {
             try {
-                taharaService.closePacking(request, (Message result) -> {
+                taharaService.process10012(request, (Message result) -> {
                     logger.info("{} :: {}", request.getHeader().getTransactionID(), result.getHeader().getTransactionID());
 
                     if(!request.getHeader().getTransactionID().equals(result.getHeader().getTransactionID())) {
@@ -632,16 +791,17 @@ public class MainWindowController implements Initializable {
                     }
 
                     Platform.runLater(() -> {
-                        waitingDialog.getScene().getWindow().hide();
+                        if(this.finishPackingWaitingDialog != null) {
+                            this.finishPackingWaitingDialog.getScene().getWindow().hide();
+                        }
 
                         if(!"0".equals(result.getBody().getResult().getErrorCode())) {
                             FXUtil.error(this.bundle.getString("error"), String.format(this.bundle.getString("errorOccurred"), result.getBody().getResult().getErrorCode(), result.getBody().getResult().getErrorText()));
                             return;
                         }
 
-                        if("2".equals(state)) {
-                            packageSNField.setText("");
-                            tableView.getItems().clear();
+                        if("1".equals(state) || "3".equals(state)) {
+                            clearPage();
                         }
                     });
                 });
@@ -656,17 +816,18 @@ public class MainWindowController implements Initializable {
 
     //---- UTILITIES ----
 
-    private void refreshStatusBar() {
+    private void refreshStatusInfo() {
         ObservableList<PackingInfo> infoList = tableView.getItems();
 
         int count = infoList.size();
-        int inProgress = infoList.filtered(o -> o.getResponse() == null).size();
+//        int inProgress = infoList.filtered(o -> STATUS_INIT.equals(o.getStatus())).size();
         int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
         int failure = infoList.filtered(o -> STATUS_FAILURE.equals(o.getStatus())).size();
+        int proceeded = infoList.filtered(o -> STATUS_PRCEEDED.equals(o.getStatus())).size();
 
-        statusLabel.setText(String.format(this.bundle.getString("statusBarMessage"), count, inProgress, success, failure));
+        statusLabel.setText(String.format(this.bundle.getString("statusBarMessage"), count, success, failure, proceeded));
 
-        progressField.setText(String.format("%d/%d", success, count));
+        progressField.setText(String.format("%d/%d", packageQuantity + statusMap.entrySet().stream().filter(e -> e.getValue().equals(STATUS_SUCCESS)).count(), packageCapacity));
 
         if(failure > 0) {
             statusLabel.setStyle("-fx-background-color: #FF0F0F; -fx-border-color: #0FFFFF;");
@@ -681,7 +842,10 @@ public class MainWindowController implements Initializable {
         FXUtil.alert(this.bundle.getString("info"), String.format(this.bundle.getString("tableRowInfo"), row.getWipno(), row.getText()));
     }
 
-    private void showFailureDialog(String wipno, String errorMessage) {
+    private void showFailureDialog(PackingInfo packingInfo) {
+        String wipno = packingInfo.getWipno();
+        String errorMessage = packingInfo.getText();
+
         try {
             ResourceBundle bundle = ResourceBundle.getBundle("fx.bundle.Failure");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fx/Failure.fxml"), bundle);
@@ -704,6 +868,14 @@ public class MainWindowController implements Initializable {
             stage.showAndWait();
 
             logger.info("result : {}", controller.getResult());
+
+            if(wipno.equals(controller.getResult())) {
+                packingInfo.setStatus(STATUS_PRCEEDED);
+//                proceededCounter++;
+                statusMap.put(wipno, STATUS_PRCEEDED);
+                tableView.refresh();
+                refreshStatusInfo();
+            }
         }
         catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -734,5 +906,25 @@ public class MainWindowController implements Initializable {
         }
 
         return null;
+    }
+
+    private void clearPage() {
+        this.packageSNField.setText("");
+
+        this.tableView.getItems().clear();
+        this.tableView.refresh();
+
+        this.packageQuantity = 0;
+        this.packageCapacity = 0;
+        this.packageSequence = 0;
+
+//        this.inprogressCounter = 0;
+//        this.successCounter = 0;
+//        this.failedCounter = 0;
+//        this.proceededCounter = 0;
+
+        statusMap.clear();
+
+        refreshStatusInfo();
     }
 }

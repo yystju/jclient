@@ -35,50 +35,12 @@ public class ClientConfigurationUtil {
         }
     }
 
-    public static void saveClientConfiguration(String equipmentName, String username) {
+    public static void saveClientConfiguration() {
         File clientConfigurationFile = new File("./client.json");
 
         ObjectMapper mapper = new ObjectMapper();
 
         try {
-            clientConfiguration.setEquipmentName(equipmentName);
-            clientConfiguration.setUsername(username);
-
-            mapper.writeValue(clientConfigurationFile, clientConfiguration);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    public static void saveClientConfiguration(String equipmentName, String username, String productNumber, String productBIN) {
-        File clientConfigurationFile = new File("./client.json");
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        try {
-            clientConfiguration.setEquipmentName(equipmentName);
-            clientConfiguration.setUsername(username);
-            clientConfiguration.setProductNumber(productNumber);
-            clientConfiguration.setProductBIN(productBIN);
-
-            mapper.writeValue(clientConfigurationFile, clientConfiguration);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    public static void saveClientConfiguration(String equipmentName, String username, String productNumber, String productBIN, String packingSN, long packageSequence) {
-        File clientConfigurationFile = new File("./client.json");
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        try {
-            clientConfiguration.setEquipmentName(equipmentName);
-            clientConfiguration.setUsername(username);
-            clientConfiguration.setProductNumber(productNumber);
-            clientConfiguration.setProductBIN(productBIN);
-            clientConfiguration.setPackingSN(packingSN);
-
             mapper.writeValue(clientConfigurationFile, clientConfiguration);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

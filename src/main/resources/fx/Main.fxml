@@ -41,12 +41,13 @@
             <Label text="%wipno" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
             <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="11" GridPane.rowIndex="1" />
 
-            <Button prefHeight="4.0" prefWidth="200.0" text="%startPackingButton" GridPane.columnIndex="0" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnNewPackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="1" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnClosePackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%openPackingButton" GridPane.columnIndex="2" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnOpenPackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%sealPackingButton" GridPane.columnIndex="3" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnSealPackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%unpackingButton" GridPane.columnIndex="4" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnUnPackingClicked"/>
-            <Button prefHeight="4.0" prefWidth="200.0" text="%clearButton" GridPane.columnIndex="5" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnClearClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="0" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnFinishPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%pullOutButton" GridPane.columnIndex="1" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnPullOutClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%unpackingButton" GridPane.columnIndex="2" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnUnPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%openPackingButton" GridPane.columnIndex="3" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnOpenPackingClicked"/>
+            <Button prefHeight="4.0" prefWidth="200.0" text="%fetchBackButton" GridPane.columnIndex="4" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnFetchBackClicked"/>
+            <!--<Button prefHeight="4.0" prefWidth="200.0" text="%clearButton" GridPane.columnIndex="" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnClearClicked"/>-->
+            <!--<Button prefHeight="4.0" prefWidth="200.0" text="%sealPackingButton" GridPane.columnIndex="" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnSealPackingClicked"/>-->
 
             <rowConstraints>
             <RowConstraints />

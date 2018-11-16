@@ -34,12 +34,12 @@ public class TaharaServiceImpl implements TaharaService {
     }
 
     @Override
-    public void startPacking(Message request, MessageCallback callback) throws Exception {
+    public void process10009(Message request, MessageCallback callback) throws Exception {
         singleTCPSocketService.sendMessage(request, callback);
     }
 
     @Override
-    public void closePacking(Message request, MessageCallback callback) throws Exception {
+    public void process10012(Message request, MessageCallback callback) throws Exception {
         singleTCPSocketService.sendMessage(request, callback);
     }
 
@@ -55,6 +55,11 @@ public class TaharaServiceImpl implements TaharaService {
 
     @Override
     public void process10010(Message request, MessageCallback callback) throws Exception {
+        singleTCPSocketService.sendMessage(request, callback);
+    }
+
+    @Override
+    public void process10011(Message request, MessageCallback callback) throws Exception {
         singleTCPSocketService.sendMessage(request, callback);
     }
 }

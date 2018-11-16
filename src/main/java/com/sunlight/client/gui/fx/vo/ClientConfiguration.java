@@ -3,10 +3,10 @@ package com.sunlight.client.gui.fx.vo;
 public class ClientConfiguration {
     private String equipmentName;
     private String username;
-    private String productNumber;
-    private String productBIN;
+//    private String productNumber;
+//    private String productBIN;
     private String packingSN;
-    private long packageSequence;
+//    private long packageSequence;
 
     public String getEquipmentName() {
         return equipmentName;
@@ -23,22 +23,22 @@ public class ClientConfiguration {
     public void setUsername(String username) {
         this.username = username;
     }
-
-    public String getProductNumber() {
-        return productNumber;
-    }
-
-    public void setProductNumber(String productNumber) {
-        this.productNumber = productNumber;
-    }
-
-    public String getProductBIN() {
-        return productBIN;
-    }
-
-    public void setProductBIN(String productBIN) {
-        this.productBIN = productBIN;
-    }
+//
+//    public String getProductNumber() {
+//        return productNumber;
+//    }
+//
+//    public void setProductNumber(String productNumber) {
+//        this.productNumber = productNumber;
+//    }
+//
+//    public String getProductBIN() {
+//        return productBIN;
+//    }
+//
+//    public void setProductBIN(String productBIN) {
+//        this.productBIN = productBIN;
+//    }
 
     public String getPackingSN() {
         return packingSN;
@@ -47,12 +47,12 @@ public class ClientConfiguration {
     public void setPackingSN(String packingSN) {
         this.packingSN = packingSN;
     }
-
-    public long getPackageSequence() {
-        return packageSequence;
-    }
-
-    public void setPackageSequence(long packageSequence) {
-        this.packageSequence = packageSequence;
-    }
+//
+//    public long getPackageSequence() {
+//        return packageSequence;
+//    }
+//
+//    public void setPackageSequence(long packageSequence) {
+//        this.packageSequence = packageSequence;
+//    }
 }

@@ -119,7 +119,9 @@ public class LoginWindowController implements Initializable {
         if(taharaService.authenticate(username, password)) {
             this.taharaService.setEquipmentName(equipmentName);
 
-            ClientConfigurationUtil.saveClientConfiguration(equipmentName, username);
+            this.clientConfiguration.setEquipmentName(equipmentName);
+            this.clientConfiguration.setUsername(username);
+            ClientConfigurationUtil.saveClientConfiguration();
 
             startMainWindow(event);
         } else {

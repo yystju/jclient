@@ -3,7 +3,7 @@
 }
 
 #wipnoLabel {
-    -fx-alignment: center;
+    -fx-alignment: left;
 }
 
 .error {
@@ -20,4 +20,12 @@
     -fx-background-image: url('../imgs/qr-close.png');
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
+}
+
+#closeInfoLabel {
+    -fx-font: normal bold 25px 'serif';
+}
+
+#errorMessageLabel {
+    -fx-font: normal bold 35px 'serif';
 }
