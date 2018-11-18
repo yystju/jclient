@@ -17,6 +17,10 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.slf4j.Logger;
@@ -24,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 

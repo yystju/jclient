@@ -13,8 +13,6 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 <!--https://www.oracle.com/technetwork/java/javase/downloads/javafxscenebuilder-1x-archive-2199384.html-->
-
-<?import javafx.scene.layout.Pane?>
 <BorderPane fx:id="main" prefHeight="800.0" prefWidth="1200.0" styleClass="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sunlight.client.gui.fx.controllers.MainWindowController">
     <top>
         <GridPane>
@@ -35,11 +33,11 @@
             </columnConstraints>
 
             <Label text="%packageSN" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="0" focusTraversable="false"/>
-            <TextField editable="false" fx:id="packageSNField" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="9" focusTraversable="false"/>
-            <TextField editable="false" fx:id="progressField" GridPane.columnIndex="10" GridPane.rowIndex="0" GridPane.columnSpan="2" focusTraversable="false"/>
+            <TextField fx:id="packageSNField" styleClass="bigfont" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="9" focusTraversable="false"/>
+            <TextField fx:id="progressField" styleClass="bigfont" editable="false" GridPane.columnIndex="10" GridPane.rowIndex="0" GridPane.columnSpan="2" focusTraversable="false"/>
 
             <Label text="%wipno" textAlignment="RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="wipnoField" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="11" GridPane.rowIndex="1" />
+            <TextField fx:id="wipnoField" styleClass="bigfont" onKeyPressed="#onWipFieldKeyPress" GridPane.columnIndex="1" GridPane.columnSpan="11" GridPane.rowIndex="1" />
 
             <Button prefHeight="4.0" prefWidth="200.0" text="%finishPackingButton" GridPane.columnIndex="0" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnFinishPackingClicked"/>
             <Button prefHeight="4.0" prefWidth="200.0" text="%pullOutButton" GridPane.columnIndex="1" GridPane.rowIndex="2" focusTraversable="false" onMouseClicked="#onBtnPullOutClicked"/>

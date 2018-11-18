@@ -4,14 +4,10 @@ import com.sunlight.client.ClientApplication;
 import com.sunlight.client.api.TaharaService;
 import com.sunlight.client.gui.fx.vo.ClientConfiguration;
 import com.sunlight.client.util.FXUtil;
-import com.sunlight.client.vo.*;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.schedulers.Schedulers;
+import com.sunlight.client.util.SoundUtil;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -19,9 +15,9 @@ import javafx.scene.layout.AnchorPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.util.StringUtils;
 
 import java.awt.*;
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -69,7 +65,40 @@ public class FailureWindowController implements Initializable {
 
             wipnoLabel.setText(String.format(this.bundle.getString("wipno.info"), wipno));
             errorMessageLabel.setText(String.format(this.bundle.getString("wipno.error"), errorMessage));
+
+            File f = new File("media/error.wav");
+
+            if(f.exists()) {
+//                String uri = f.toURI().toString();
+////            String uri = "http://www.gov.cn/guoqing/guoge/hc.mp3";
+//
+//                logger.info("-x- {}", uri);
+//                Media media = new Media(uri);
+//
+//                media.setOnError(() -> {
+//                    logger.info("media error...");
+//                    logger.info("-error- {}", media.getError());
+//                });
+//
+//                MediaPlayer mediaPlayer = new MediaPlayer(media);
+//
+//                mediaPlayer.setOnError(() -> {
+//                    logger.info("mediaplayer error...");
+//                    logger.info("-error- {}", mediaPlayer.getError());
+//                });
+//
+//                mediaPlayer.setVolume(1.0);
+//                mediaPlayer.play();
+//
+//                mediaView.setMediaPlayer(mediaPlayer);
+
+                SoundUtil.playWave(f);
+            }
         });
+    }
+
+    public void close() {
+        this.mainPane.getScene().getWindow().hide();
     }
 
     public void onMainPaneKeyPress(KeyEvent event) {
@@ -92,10 +121,10 @@ public class FailureWindowController implements Initializable {
                 if(choice) {
 //                    do10010(clientConfiguration.getPackingSN(), wipno);
                     this.result = this.wipno;
-                    this.mainPane.getScene().getWindow().hide();
+                    close();
                 }
             } else if ("-".equals(line)) {
-                ((Node)(event.getSource())).getScene().getWindow().hide();
+                close();
             } else {
                 if(!this.mainPane.getStyleClass().contains(CSS_CLASS_ERROR)) {
                     this.mainPane.getStyleClass().add(CSS_CLASS_ERROR);
@@ -173,6 +202,57 @@ public class FailureWindowController implements Initializable {
 //                });
 //            }
 //        });
+//    }
+
+//    private void startMediaWindow(ActionEvent event) {
+//        try {
+////            String uri = new File("./media/1.mp3").toURI().toString();
+//            String uri = "http://www.gov.cn/guoqing/guoge/hc.mp3";
+//
+//            logger.info("-x- {}", uri);
+//            Media media = new Media(uri);
+//
+//            media.setOnError(() -> {
+//                logger.info("media error...");
+//                logger.info("-error- {}", media.getError());
+//            });
+//
+//            MediaPlayer mediaPlayer = new MediaPlayer(media);
+//
+//            mediaPlayer.setOnError(() -> {
+//                logger.info("mediaplayer error...");
+//                logger.info("-error- {}", mediaPlayer.getError());
+//            });
+//
+//            mediaPlayer.setVolume(1.0);
+//            mediaPlayer.play();
+//
+//            logger.info("mediaPlayer : {}", mediaPlayer.getStartTime());
+//            logger.info("mediaPlayer.getCurrentTime() : {}", mediaPlayer.getCurrentTime());
+//
+//            MediaView mv = new MediaView(mediaPlayer);
+//
+//            Pane p = new Pane();
+//
+//            p.getChildren().add(mv);
+//
+//            mv.fitHeightProperty().bind(p.heightProperty());
+//            mv.fitWidthProperty().bind(p.widthProperty());
+//
+//            Stage stage = new Stage();
+//            stage.setTitle(bundle.getString("title"));
+//            stage.setScene(new Scene(p, 640, 480));
+//            stage.setOnCloseRequest((WindowEvent e) -> {
+//                Platform.exit();
+//                System.exit(0);
+//            });
+//            stage.show();
+//
+//            ((Node)(event.getSource())).getScene().getWindow().hide();
+//        }
+//        catch (Exception e) {
+//            logger.error(e.getMessage(), e);
+//        }
 //    }
 
     public String getWipno() {

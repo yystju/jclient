@@ -239,9 +239,9 @@ public class MainWindowController implements Initializable {
         ObservableList<PackingInfo> infoList = tableView.getItems();
 
         int count = infoList.size();
-        int success = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus())).size();
+        int ok = infoList.filtered(o -> STATUS_SUCCESS.equals(o.getStatus()) || STATUS_PRCEEDED.equals(o.getStatus())).size();
 
-        if(success < count) {
+        if(ok < count) {
             FXUtil.alert(this.bundle.getString("error"), this.bundle.getString("failureExisted"));
             return;
         }
@@ -439,10 +439,9 @@ public class MainWindowController implements Initializable {
                     packingInfo1.setResponse(result);
                     packingInfo1.setStatus(result != null ? ("0".equals(result.getBody().getResult().getErrorCode()) ? STATUS_SUCCESS : STATUS_FAILURE) : STATUS_INIT);
 
-                    statusMap.put(wipno, packingInfo1.getStatus());
-
                     if(STATUS_SUCCESS.equals(packingInfo1.getStatus())) {
 //                        successCounter++;
+                        statusMap.put(wipno, packingInfo1.getStatus());
 
                         long quantity = this.packageQuantity + statusMap.entrySet().stream().filter(e -> e.getValue().equals(STATUS_SUCCESS)).count();
 

@@ -5,3 +5,7 @@
 .row-red {
     -fx-background-color: red ;
 }
+
+.bigfont {
+    -fx-font: normal bold 40px 'serif';
+}
