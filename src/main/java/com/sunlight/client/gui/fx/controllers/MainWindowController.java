@@ -541,7 +541,6 @@ public class MainWindowController implements Initializable {
                         packageSNField.setText(result.getBody().getPackageContainer().getNumber());
                         packageSequence = 0;
 
-                        //xx
                         this.clientConfiguration.setPackingSN(result.getBody().getPackageContainer().getNumber());
                         ClientConfigurationUtil.saveClientConfiguration();
 
@@ -800,6 +799,8 @@ public class MainWindowController implements Initializable {
                         }
 
                         if("1".equals(state) || "3".equals(state)) {
+                            this.clientConfiguration.setPackingSN("");
+                            ClientConfigurationUtil.saveClientConfiguration();
                             clearPage();
                         }
                     });
