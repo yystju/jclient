@@ -167,11 +167,13 @@ public class MainWindowController implements Initializable {
 
         this.clientConfiguration = ClientConfigurationUtil.getClientConfiguration();
 
-        if(!StringUtils.isEmpty(this.clientConfiguration.getPackingSN())) {
-            this.packageSNField.setText(this.clientConfiguration.getPackingSN());
+        Platform.runLater(() -> {
+            if(!StringUtils.isEmpty(this.clientConfiguration.getPackingSN())) {
+                this.packageSNField.setText(this.clientConfiguration.getPackingSN());
 
-            do10011(null);
-        }
+                do10011(null);
+            }
+        });
     }
 
     //---- EVENT HANDLERs ----
@@ -379,7 +381,9 @@ public class MainWindowController implements Initializable {
 //        ++inprogressCounter;
 //        logger.info("inprogressCounter : {}, successCounter : {}, failedCounter : {}, proceededCounter : {}", inprogressCounter, successCounter, failedCounter, proceededCounter);
 
-        statusMap.put(wipno, STATUS_INIT);
+        if(!STATUS_SUCCESS.equals(statusMap.get(wipno))) {
+            statusMap.put(wipno, STATUS_INIT);
+        }
         long inprogress = statusMap.entrySet().stream().filter(e -> e.getValue().equals(STATUS_INIT)).count() + this.packageQuantity;
 
 //        if(inprogressCounter >= this.packageCapacity) {
@@ -453,6 +457,8 @@ public class MainWindowController implements Initializable {
                     } else if(STATUS_FAILURE.equals(packingInfo1.getStatus())) {
 //                        failedCounter++;
                     }
+
+                    logger.info("statusMap : {}", statusMap);
 
                     if(callback != null) {
                         callback.onReceived(result);

@@ -3,7 +3,7 @@
 }
 
 #wipnoLabel {
-    -fx-alignment: left;
+    -fx-alignment: baseline-left;
 }
 
 .error {
